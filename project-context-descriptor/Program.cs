@@ -1,13 +1,17 @@
-﻿using System.Text;
+﻿using Ignore;
+using System.Text;
 using System.Text.Json;
 using Ude;
 
 
 class Program
 {
+    static Ignore.Ignore? ignore = null;
+    static string? basePath = null;
+
     static void Main(string[] args)
     {
-        string basePath = args.Length > 0 && Directory.Exists(args[0])
+        basePath = args.Length > 0 && Directory.Exists(args[0])
             ? args[0]
             : Directory.GetCurrentDirectory();
 
@@ -20,6 +24,16 @@ class Program
                                 .ToHashSet();
         }
 
+        var ignorePath = Path.Combine(basePath, ".gitignore");
+        if (File.Exists(ignorePath))
+        {
+            var rules = File.ReadAllLines(ignorePath);
+            ignore = new Ignore.Ignore();
+            foreach (var rule in rules)
+                ignore.Add(rule);
+        }
+
+
         var structure = BuildDirectoryStructure(basePath, basePath, extensions);
         var content = BuildFileContents(basePath, extensions);
 
@@ -31,12 +45,23 @@ class Program
         Console.WriteLine("Контекст проекта сохранён.");
     }
 
+    static bool IsIgnored(string path)
+    {
+        if (ignore == null) return false;
+
+        // Получить путь относительно корня проекта
+        var relative = Path.GetRelativePath(basePath ?? Directory.GetCurrentDirectory(), path).Replace("\\", "/");
+
+        return ignore.IsIgnored(relative);
+    }
+
+
     static object BuildDirectoryStructure(string rootPath, string currentPath, HashSet<string> extensions)
     {
         var result = new Dictionary<string, object>();
 
         var files = Directory.EnumerateFiles(currentPath)
-            .Where(f => ShouldInclude(f, extensions))
+            .Where(f => ShouldInclude(f, extensions) && !IsIgnored(f))
             .Select(Path.GetFileName)
             .ToList();
 
@@ -61,7 +86,7 @@ class Program
         var sb = new StringBuilder();
 
         foreach (var file in Directory.EnumerateFiles(rootPath, "*.*", SearchOption.AllDirectories)
-                     .Where(f => ShouldInclude(f, extensions)))
+                     .Where(f => ShouldInclude(f, extensions) && !IsIgnored(f)))
         {
             string relativePath = Path.GetRelativePath(rootPath, file);
             sb.AppendLine($"File: {relativePath}");
@@ -86,7 +111,7 @@ class Program
     // Проверка, стоит ли включать файл
     static bool ShouldInclude(string filePath, HashSet<string> extensions)
     {
-        if (extensions != null)
+        if (extensions.Count > 0)
         {
             return extensions.Contains(Path.GetExtension(filePath).ToLowerInvariant());
         }
