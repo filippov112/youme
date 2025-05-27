@@ -1,0 +1,58 @@
+{
+  ".": [
+    "Dockerfile",
+    "Program.cs",
+    "project-context-descriptor.csproj",
+    "project-context-descriptor.csproj.user"
+  ],
+  "bin": {
+    "bin\\Debug": {
+      "bin\\Debug\\net8.0": {
+        ".": [
+          "project-context-descriptor.deps.json",
+          "project-context-descriptor.runtimeconfig.json"
+        ]
+      }
+    }
+  },
+  "obj": {
+    ".": [
+      "project-context-descriptor.csproj.nuget.dgspec.json",
+      "project-context-descriptor.csproj.nuget.g.props",
+      "project-context-descriptor.csproj.nuget.g.targets",
+      "project.assets.json",
+      "project.nuget.cache"
+    ],
+    "obj\\Debug": {
+      "obj\\Debug\\net8.0": {
+        ".": [
+          ".NETCoreApp,Version=v8.0.AssemblyAttributes.cs",
+          "project-.3C2B51C8.Up2Date",
+          "project-context-descriptor.AssemblyInfo.cs",
+          "project-context-descriptor.AssemblyInfoInputs.cache",
+          "project-context-descriptor.csproj.CoreCompileInputs.cache",
+          "project-context-descriptor.csproj.FileListAbsolute.txt",
+          "project-context-descriptor.GeneratedMSBuildEditorConfig.editorconfig",
+          "project-context-descriptor.genruntimeconfig.cache",
+          "project-context-descriptor.GlobalUsings.g.cs"
+        ]
+      }
+    },
+    "obj\\Release": {
+      "obj\\Release\\net8.0": {
+        ".": [
+          ".NETCoreApp,Version=v8.0.AssemblyAttributes.cs",
+          "project-context-descriptor.AssemblyInfo.cs",
+          "project-context-descriptor.AssemblyInfoInputs.cache",
+          "project-context-descriptor.GeneratedMSBuildEditorConfig.editorconfig",
+          "project-context-descriptor.GlobalUsings.g.cs"
+        ]
+      }
+    }
+  },
+  "Properties": {
+    ".": [
+      "launchSettings.json"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "project-context-descriptor": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

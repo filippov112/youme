@@ -1,0 +1,845 @@
+File: Dockerfile
+```
+# См. статью по ссылке https://aka.ms/customizecontainer, чтобы узнать как настроить контейнер отладки и как Visual Studio использует этот Dockerfile для создания образов для ускорения отладки.
+
+# Этот этап используется при запуске из VS в быстром режиме (по умолчанию для конфигурации отладки)
+FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
+USER app
+WORKDIR /app
+
+
+# Этот этап используется для сборки проекта службы
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["project-context-descriptor/project-context-descriptor.csproj", "project-context-descriptor/"]
+RUN dotnet restore "./project-context-descriptor/project-context-descriptor.csproj"
+COPY . .
+WORKDIR "/src/project-context-descriptor"
+RUN dotnet build "./project-context-descriptor.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./project-context-descriptor.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+# Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "project-context-descriptor.dll"]
+```
+
+File: Program.cs
+```
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
+using Ude;
+
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        string basePath = args.Length > 0 && Directory.Exists(args[0])
+            ? args[0]
+            : Directory.GetCurrentDirectory();
+
+        // Если расширения указаны, использовать их
+        HashSet<string> extensions = null;
+        if (args.Length >= 2)
+        {
+            extensions = args[1].Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                .Select(ext => ext.Trim().ToLowerInvariant())
+                                .ToHashSet();
+        }
+
+        var structure = BuildDirectoryStructure(basePath, basePath, extensions);
+        var content = BuildFileContents(basePath, extensions);
+
+        File.WriteAllText(Path.Combine(basePath, "project_structure.json"),
+                          JsonSerializer.Serialize(structure, new JsonSerializerOptions { WriteIndented = true }));
+
+        File.WriteAllText(Path.Combine(basePath, "project_content.txt"), content);
+
+        Console.WriteLine("Контекст проекта сохранён.");
+    }
+
+    static object BuildDirectoryStructure(string rootPath, string currentPath, HashSet<string> extensions)
+    {
+        var result = new Dictionary<string, object>();
+
+        var files = Directory.EnumerateFiles(currentPath)
+            .Where(f => ShouldInclude(f, extensions))
+            .Select(Path.GetFileName)
+            .ToList();
+
+        if (files.Count > 0)
+            result["."] = files;
+
+        foreach (var dir in Directory.EnumerateDirectories(currentPath))
+        {
+            var subStructure = BuildDirectoryStructure(rootPath, dir, extensions);
+            if (subStructure is Dictionary<string, object> dict && dict.Count > 0)
+            {
+                string key = Path.GetRelativePath(rootPath, dir);
+                result[key] = subStructure;
+            }
+        }
+
+        return result;
+    }
+
+    static string BuildFileContents(string rootPath, HashSet<string> extensions)
+    {
+        var sb = new StringBuilder();
+
+        foreach (var file in Directory.EnumerateFiles(rootPath, "*.*", SearchOption.AllDirectories)
+                     .Where(f => ShouldInclude(f, extensions)))
+        {
+            string relativePath = Path.GetRelativePath(rootPath, file);
+            sb.AppendLine($"File: {relativePath}");
+            sb.AppendLine("```");
+
+            try
+            {
+                sb.AppendLine(ReadFileWithEncoding(file));
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine($"[Ошибка чтения файла: {ex.Message}]");
+            }
+
+            sb.AppendLine("```");
+            sb.AppendLine();
+        }
+
+        return sb.ToString();
+    }
+
+    // Проверка, стоит ли включать файл
+    static bool ShouldInclude(string filePath, HashSet<string> extensions)
+    {
+        if (extensions != null)
+        {
+            return extensions.Contains(Path.GetExtension(filePath).ToLowerInvariant());
+        }
+
+        // Если расширения не заданы — проверка на "текстовость"
+        try
+        {
+            using var stream = File.OpenRead(filePath);
+            int readByte;
+            int maxBytes = 512;
+            int totalRead = 0;
+
+            while ((readByte = stream.ReadByte()) != -1 && totalRead < maxBytes)
+            {
+                if (readByte == 0) return false; // бинарный null
+                if (readByte < 7 || (readByte > 13 && readByte < 32)) return false;
+                totalRead++;
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    static string ReadFileWithEncoding(string path)
+    {
+        try
+        {
+            // 1. Сначала проверка BOM
+            using (var fs = File.OpenRead(path))
+            {
+                if (fs.Length >= 3)
+                {
+                    byte[] bom = new byte[4];
+                    fs.Read(bom, 0, 4);
+                    fs.Position = 0;
+
+                    if (bom[0] == 0xEF && bom[1] == 0xBB && bom[2] == 0xBF)
+                        return new StreamReader(fs, Encoding.UTF8).ReadToEnd();
+                    if (bom[0] == 0xFF && bom[1] == 0xFE)
+                        return new StreamReader(fs, Encoding.Unicode).ReadToEnd(); // UTF-16 LE
+                    if (bom[0] == 0xFE && bom[1] == 0xFF)
+                        return new StreamReader(fs, Encoding.BigEndianUnicode).ReadToEnd(); // UTF-16 BE
+                }
+
+                // 2. Попытка распознать кодировку через Ude
+                var detector = new CharsetDetector();
+                detector.Feed(fs);
+                detector.DataEnd();
+
+                if (detector.Charset != null)
+                {
+                    fs.Position = 0;
+                    Encoding encoding = Encoding.GetEncoding(detector.Charset);
+                    using var reader = new StreamReader(fs, encoding);
+                    return reader.ReadToEnd();
+                }
+
+                // 3. Если не удалось — читаем как UTF-8 без BOM
+                fs.Position = 0;
+                return new StreamReader(fs, new UTF8Encoding(false)).ReadToEnd();
+            }
+        }
+        catch (Exception ex)
+        {
+            return $"[Ошибка определения кодировки: {ex.Message}]";
+        }
+    }
+
+}
+
+```
+
+File: project-context-descriptor.csproj
+```
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>project_context_descriptor</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="Ude.NetStandard" Version="1.2.0" />
+  </ItemGroup>
+
+</Project>
+
+```
+
+File: project-context-descriptor.csproj.user
+```
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ActiveDebugProfile>Container (Dockerfile)</ActiveDebugProfile>
+  </PropertyGroup>
+</Project>
+```
+
+File: obj\project-context-descriptor.csproj.nuget.dgspec.json
+```
+{
+  "format": 1,
+  "restore": {
+    "C:\\Projects\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor.csproj": {}
+  },
+  "projects": {
+    "C:\\Projects\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Projects\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor.csproj",
+        "projectName": "project-context-descriptor",
+        "projectPath": "C:\\Projects\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor.csproj",
+        "packagesPath": "C:\\Users\\ilya\\.nuget\\packages\\",
+        "outputPath": "C:\\Projects\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\ilya\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
+              "target": "Package",
+              "version": "[1.21.0, )"
+            },
+            "Ude.NetStandard": {
+              "target": "Package",
+              "version": "[1.2.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
+```
+
+File: obj\project-context-descriptor.csproj.nuget.g.props
+```
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <RestoreSuccess Condition=" '$(RestoreSuccess)' == '' ">True</RestoreSuccess>
+    <RestoreTool Condition=" '$(RestoreTool)' == '' ">NuGet</RestoreTool>
+    <ProjectAssetsFile Condition=" '$(ProjectAssetsFile)' == '' ">$(MSBuildThisFileDirectory)project.assets.json</ProjectAssetsFile>
+    <NuGetPackageRoot Condition=" '$(NuGetPackageRoot)' == '' ">$(UserProfile)\.nuget\packages\</NuGetPackageRoot>
+    <NuGetPackageFolders Condition=" '$(NuGetPackageFolders)' == '' ">C:\Users\ilya\.nuget\packages\</NuGetPackageFolders>
+    <NuGetProjectStyle Condition=" '$(NuGetProjectStyle)' == '' ">PackageReference</NuGetProjectStyle>
+    <NuGetToolVersion Condition=" '$(NuGetToolVersion)' == '' ">6.11.0</NuGetToolVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <SourceRoot Include="C:\Users\ilya\.nuget\packages\" />
+  </ItemGroup>
+  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <Import Project="$(NuGetPackageRoot)microsoft.visualstudio.azure.containers.tools.targets\1.21.0\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props" Condition="Exists('$(NuGetPackageRoot)microsoft.visualstudio.azure.containers.tools.targets\1.21.0\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props')" />
+  </ImportGroup>
+  <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <PkgMicrosoft_VisualStudio_Azure_Containers_Tools_Targets Condition=" '$(PkgMicrosoft_VisualStudio_Azure_Containers_Tools_Targets)' == '' ">C:\Users\ilya\.nuget\packages\microsoft.visualstudio.azure.containers.tools.targets\1.21.0</PkgMicrosoft_VisualStudio_Azure_Containers_Tools_Targets>
+  </PropertyGroup>
+</Project>
+```
+
+File: obj\project-context-descriptor.csproj.nuget.g.targets
+```
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <Import Project="$(NuGetPackageRoot)microsoft.visualstudio.azure.containers.tools.targets\1.21.0\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets" Condition="Exists('$(NuGetPackageRoot)microsoft.visualstudio.azure.containers.tools.targets\1.21.0\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets')" />
+  </ImportGroup>
+</Project>
+```
+
+File: obj\project.assets.json
+```
+{
+  "version": 3,
+  "targets": {
+    "net8.0": {
+      "Microsoft.VisualStudio.Azure.Containers.Tools.Targets/1.21.0": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props": {},
+          "build/Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets": {}
+        }
+      },
+      "Ude.NetStandard/1.2.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Ude.NetStandard.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Ude.NetStandard.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Microsoft.VisualStudio.Azure.Containers.Tools.Targets/1.21.0": {
+      "sha512": "8NudeHOE56YsY59HYY89akRMup8Ho+7Y3cADTGjajjWroXVU9RQai2nA6PfteB8AuzmRHZ5NZQB2BnWhQEul5g==",
+      "type": "package",
+      "path": "microsoft.visualstudio.azure.containers.tools.targets/1.21.0",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "CHANGELOG.md",
+        "EULA.md",
+        "ThirdPartyNotices.txt",
+        "build/Container.props",
+        "build/Container.targets",
+        "build/Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props",
+        "build/Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets",
+        "build/Rules/GeneralBrowseObject.xaml",
+        "build/Rules/cs-CZ/GeneralBrowseObject.xaml",
+        "build/Rules/de-DE/GeneralBrowseObject.xaml",
+        "build/Rules/es-ES/GeneralBrowseObject.xaml",
+        "build/Rules/fr-FR/GeneralBrowseObject.xaml",
+        "build/Rules/it-IT/GeneralBrowseObject.xaml",
+        "build/Rules/ja-JP/GeneralBrowseObject.xaml",
+        "build/Rules/ko-KR/GeneralBrowseObject.xaml",
+        "build/Rules/pl-PL/GeneralBrowseObject.xaml",
+        "build/Rules/pt-BR/GeneralBrowseObject.xaml",
+        "build/Rules/ru-RU/GeneralBrowseObject.xaml",
+        "build/Rules/tr-TR/GeneralBrowseObject.xaml",
+        "build/Rules/zh-CN/GeneralBrowseObject.xaml",
+        "build/Rules/zh-TW/GeneralBrowseObject.xaml",
+        "build/ToolsTarget.props",
+        "build/ToolsTarget.targets",
+        "icon.png",
+        "microsoft.visualstudio.azure.containers.tools.targets.1.21.0.nupkg.sha512",
+        "microsoft.visualstudio.azure.containers.tools.targets.nuspec",
+        "tools/Microsoft.VisualStudio.Containers.Tools.Common.dll",
+        "tools/Microsoft.VisualStudio.Containers.Tools.Shared.dll",
+        "tools/Microsoft.VisualStudio.Containers.Tools.Tasks.dll",
+        "tools/Newtonsoft.Json.dll",
+        "tools/System.Security.Principal.Windows.dll",
+        "tools/cs/Microsoft.VisualStudio.Containers.Tools.Common.resources.dll",
+        "tools/cs/Microsoft.VisualStudio.Containers.Tools.Shared.resources.dll",
+        "tools/cs/Microsoft.VisualStudio.Containers.Tools.Tasks.resources.dll",
+        "tools/de/Microsoft.VisualStudio.Containers.Tools.Common.resources.dll",
+        "tools/de/Microsoft.VisualStudio.Containers.Tools.Shared.resources.dll",
+        "tools/de/Microsoft.VisualStudio.Containers.Tools.Tasks.resources.dll",
+        "tools/es/Microsoft.VisualStudio.Containers.Tools.Common.resources.dll",
+        "tools/es/Microsoft.VisualStudio.Containers.Tools.Shared.resources.dll",
+        "tools/es/Microsoft.VisualStudio.Containers.Tools.Tasks.resources.dll",
+        "tools/fr/Microsoft.VisualStudio.Containers.Tools.Common.resources.dll",
+        "tools/fr/Microsoft.VisualStudio.Containers.Tools.Shared.resources.dll",
+        "tools/fr/Microsoft.VisualStudio.Containers.Tools.Tasks.resources.dll",
+        "tools/it/Microsoft.VisualStudio.Containers.Tools.Common.resources.dll",
+        "tools/it/Microsoft.VisualStudio.Containers.Tools.Shared.resources.dll",
+        "tools/it/Microsoft.VisualStudio.Containers.Tools.Tasks.resources.dll",
+        "tools/ja/Microsoft.VisualStudio.Containers.Tools.Common.resources.dll",
+        "tools/ja/Microsoft.VisualStudio.Containers.Tools.Shared.resources.dll",
+        "tools/ja/Microsoft.VisualStudio.Containers.Tools.Tasks.resources.dll",
+        "tools/ko/Microsoft.VisualStudio.Containers.Tools.Common.resources.dll",
+        "tools/ko/Microsoft.VisualStudio.Containers.Tools.Shared.resources.dll",
+        "tools/ko/Microsoft.VisualStudio.Containers.Tools.Tasks.resources.dll",
+        "tools/pl/Microsoft.VisualStudio.Containers.Tools.Common.resources.dll",
+        "tools/pl/Microsoft.VisualStudio.Containers.Tools.Shared.resources.dll",
+        "tools/pl/Microsoft.VisualStudio.Containers.Tools.Tasks.resources.dll",
+        "tools/pt-BR/Microsoft.VisualStudio.Containers.Tools.Common.resources.dll",
+        "tools/pt-BR/Microsoft.VisualStudio.Containers.Tools.Shared.resources.dll",
+        "tools/pt-BR/Microsoft.VisualStudio.Containers.Tools.Tasks.resources.dll",
+        "tools/ru/Microsoft.VisualStudio.Containers.Tools.Common.resources.dll",
+        "tools/ru/Microsoft.VisualStudio.Containers.Tools.Shared.resources.dll",
+        "tools/ru/Microsoft.VisualStudio.Containers.Tools.Tasks.resources.dll",
+        "tools/tr/Microsoft.VisualStudio.Containers.Tools.Common.resources.dll",
+        "tools/tr/Microsoft.VisualStudio.Containers.Tools.Shared.resources.dll",
+        "tools/tr/Microsoft.VisualStudio.Containers.Tools.Tasks.resources.dll",
+        "tools/zh-Hans/Microsoft.VisualStudio.Containers.Tools.Common.resources.dll",
+        "tools/zh-Hans/Microsoft.VisualStudio.Containers.Tools.Shared.resources.dll",
+        "tools/zh-Hans/Microsoft.VisualStudio.Containers.Tools.Tasks.resources.dll",
+        "tools/zh-Hant/Microsoft.VisualStudio.Containers.Tools.Common.resources.dll",
+        "tools/zh-Hant/Microsoft.VisualStudio.Containers.Tools.Shared.resources.dll",
+        "tools/zh-Hant/Microsoft.VisualStudio.Containers.Tools.Tasks.resources.dll"
+      ]
+    },
+    "Ude.NetStandard/1.2.0": {
+      "sha512": "zRWpPAxBg3lNdm4UiKixTe+DFPoNid9CILggTCy/0WR2WKETe17kTWhiiIpLB2k5IEgnvA0QLfKlvd6Tvu0pzA==",
+      "type": "package",
+      "path": "ude.netstandard/1.2.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "COPYING",
+        "lib/net35/Ude.NetStandard.dll",
+        "lib/net45/Ude.NetStandard.dll",
+        "lib/netstandard1.0/Ude.NetStandard.dll",
+        "lib/netstandard1.6/Ude.NetStandard.dll",
+        "lib/netstandard2.0/Ude.NetStandard.dll",
+        "ude.netstandard.1.2.0.nupkg.sha512",
+        "ude.netstandard.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net8.0": [
+      "Microsoft.VisualStudio.Azure.Containers.Tools.Targets >= 1.21.0",
+      "Ude.NetStandard >= 1.2.0"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\ilya\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Projects\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor.csproj",
+      "projectName": "project-context-descriptor",
+      "projectPath": "C:\\Projects\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor.csproj",
+      "packagesPath": "C:\\Users\\ilya\\.nuget\\packages\\",
+      "outputPath": "C:\\Projects\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\ilya\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net8.0"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      }
+    },
+    "frameworks": {
+      "net8.0": {
+        "targetAlias": "net8.0",
+        "dependencies": {
+          "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
+            "target": "Package",
+            "version": "[1.21.0, )"
+          },
+          "Ude.NetStandard": {
+            "target": "Package",
+            "version": "[1.2.0, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400/PortableRuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}
+```
+
+File: obj\project.nuget.cache
+```
+{
+  "version": 2,
+  "dgSpecHash": "pHEx1yYZQ4M=",
+  "success": true,
+  "projectFilePath": "C:\\Projects\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor\\project-context-descriptor.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\ilya\\.nuget\\packages\\microsoft.visualstudio.azure.containers.tools.targets\\1.21.0\\microsoft.visualstudio.azure.containers.tools.targets.1.21.0.nupkg.sha512",
+    "C:\\Users\\ilya\\.nuget\\packages\\ude.netstandard\\1.2.0\\ude.netstandard.1.2.0.nupkg.sha512"
+  ],
+  "logs": []
+}
+```
+
+File: Properties\launchSettings.json
+```
+{
+  "profiles": {
+    "project-context-descriptor": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
+```
+
+File: bin\Debug\net8.0\project-context-descriptor.deps.json
+```
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "project-context-descriptor/1.0.0": {
+        "dependencies": {
+          "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": "1.21.0",
+          "Ude.NetStandard": "1.2.0"
+        },
+        "runtime": {
+          "project-context-descriptor.dll": {}
+        }
+      },
+      "Microsoft.VisualStudio.Azure.Containers.Tools.Targets/1.21.0": {},
+      "Ude.NetStandard/1.2.0": {
+        "runtime": {
+          "lib/netstandard2.0/Ude.NetStandard.dll": {
+            "assemblyVersion": "1.0.2.0",
+            "fileVersion": "1.0.2.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "project-context-descriptor/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.VisualStudio.Azure.Containers.Tools.Targets/1.21.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-8NudeHOE56YsY59HYY89akRMup8Ho+7Y3cADTGjajjWroXVU9RQai2nA6PfteB8AuzmRHZ5NZQB2BnWhQEul5g==",
+      "path": "microsoft.visualstudio.azure.containers.tools.targets/1.21.0",
+      "hashPath": "microsoft.visualstudio.azure.containers.tools.targets.1.21.0.nupkg.sha512"
+    },
+    "Ude.NetStandard/1.2.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zRWpPAxBg3lNdm4UiKixTe+DFPoNid9CILggTCy/0WR2WKETe17kTWhiiIpLB2k5IEgnvA0QLfKlvd6Tvu0pzA==",
+      "path": "ude.netstandard/1.2.0",
+      "hashPath": "ude.netstandard.1.2.0.nupkg.sha512"
+    }
+  }
+}
+```
+
+File: bin\Debug\net8.0\project-context-descriptor.runtimeconfig.json
+```
+{
+  "runtimeOptions": {
+    "tfm": "net8.0",
+    "framework": {
+      "name": "Microsoft.NETCore.App",
+      "version": "8.0.0"
+    },
+    "configProperties": {
+      "System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": false
+    }
+  }
+}
+```
+
+File: obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+```
+// <autogenerated />
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
+
+```
+
+File: obj\Debug\net8.0\project-.3C2B51C8.Up2Date
+```
+
+```
+
+File: obj\Debug\net8.0\project-context-descriptor.AssemblyInfo.cs
+```
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     Этот код создан программой.
+//     Исполняемая версия:4.0.30319.42000
+//
+//     Изменения в этом файле могут привести к неправильной работе и будут потеряны в случае
+//     повторной генерации кода.
+// </auto-generated>
+//------------------------------------------------------------------------------
+
+using System;
+using System.Reflection;
+
+[assembly: System.Reflection.AssemblyCompanyAttribute("project-context-descriptor")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyProductAttribute("project-context-descriptor")]
+[assembly: System.Reflection.AssemblyTitleAttribute("project-context-descriptor")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+
+// Создано классом WriteCodeFragment MSBuild.
+
+
+```
+
+File: obj\Debug\net8.0\project-context-descriptor.AssemblyInfoInputs.cache
+```
+94ad603635406346337fc5df47f5aeeb4e75fc759db3abd4f4260cd6ccd6627c
+
+```
+
+File: obj\Debug\net8.0\project-context-descriptor.csproj.CoreCompileInputs.cache
+```
+b1f5514f2960dbc37b24893ee2d27d66465484ae2d66d595940b9971ca9dfd70
+
+```
+
+File: obj\Debug\net8.0\project-context-descriptor.csproj.FileListAbsolute.txt
+```
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\bin\Debug\net8.0\project-context-descriptor.exe
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\bin\Debug\net8.0\project-context-descriptor.deps.json
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\bin\Debug\net8.0\project-context-descriptor.runtimeconfig.json
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\bin\Debug\net8.0\project-context-descriptor.dll
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\bin\Debug\net8.0\project-context-descriptor.pdb
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\bin\Debug\net8.0\Ude.NetStandard.dll
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\obj\Debug\net8.0\project-context-descriptor.csproj.AssemblyReference.cache
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\obj\Debug\net8.0\project-context-descriptor.GeneratedMSBuildEditorConfig.editorconfig
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\obj\Debug\net8.0\project-context-descriptor.AssemblyInfoInputs.cache
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\obj\Debug\net8.0\project-context-descriptor.AssemblyInfo.cs
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\obj\Debug\net8.0\project-context-descriptor.csproj.CoreCompileInputs.cache
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\obj\Debug\net8.0\project-.3C2B51C8.Up2Date
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\obj\Debug\net8.0\project-context-descriptor.dll
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\obj\Debug\net8.0\refint\project-context-descriptor.dll
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\obj\Debug\net8.0\project-context-descriptor.pdb
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\obj\Debug\net8.0\project-context-descriptor.genruntimeconfig.cache
+C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\obj\Debug\net8.0\ref\project-context-descriptor.dll
+
+```
+
+File: obj\Debug\net8.0\project-context-descriptor.GeneratedMSBuildEditorConfig.editorconfig
+```
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = project_context_descriptor
+build_property.ProjectDir = C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+
+```
+
+File: obj\Debug\net8.0\project-context-descriptor.genruntimeconfig.cache
+```
+919e7869e5dcd4aa4a3d1402ed403662b7da66d5f4ff5ed9f47b29cafbf78ee9
+
+```
+
+File: obj\Debug\net8.0\project-context-descriptor.GlobalUsings.g.cs
+```
+// <auto-generated/>
+global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;
+
+```
+
+File: obj\Release\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+```
+// <autogenerated />
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
+
+```
+
+File: obj\Release\net8.0\project-context-descriptor.AssemblyInfo.cs
+```
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     Этот код создан программой.
+//     Исполняемая версия:4.0.30319.42000
+//
+//     Изменения в этом файле могут привести к неправильной работе и будут потеряны в случае
+//     повторной генерации кода.
+// </auto-generated>
+//------------------------------------------------------------------------------
+
+using System;
+using System.Reflection;
+
+[assembly: System.Reflection.AssemblyCompanyAttribute("project-context-descriptor")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyProductAttribute("project-context-descriptor")]
+[assembly: System.Reflection.AssemblyTitleAttribute("project-context-descriptor")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+
+// Создано классом WriteCodeFragment MSBuild.
+
+
+```
+
+File: obj\Release\net8.0\project-context-descriptor.AssemblyInfoInputs.cache
+```
+ae27639b4b0545692438e35394c3f3d24ab9989ad0ac13bcc8e74740a314df4d
+
+```
+
+File: obj\Release\net8.0\project-context-descriptor.GeneratedMSBuildEditorConfig.editorconfig
+```
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = project_context_descriptor
+build_property.ProjectDir = C:\Projects\project-context-descriptor\project-context-descriptor\project-context-descriptor\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+
+```
+
+File: obj\Release\net8.0\project-context-descriptor.GlobalUsings.g.cs
+```
+// <auto-generated/>
+global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;
+
+```
+
