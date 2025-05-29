@@ -40,7 +40,7 @@
 	2. Добавить каталог в `PATH`:
 	3. После этого можно вызывать:
 	```powershell
-	ProjectContextDescriptor "C:\Path\To\Project" ".cs,.json"
+	ProjectContextDescriptor ".cs,.json"
 	```
 
 ## Руководство пользователя
