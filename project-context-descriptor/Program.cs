@@ -11,15 +11,13 @@ class Program
 
     static void Main(string[] args)
     {
-        basePath = args.Length > 0 && Directory.Exists(args[0])
-            ? args[0]
-            : Directory.GetCurrentDirectory();
+        basePath = Directory.GetCurrentDirectory();
 
         // Если расширения указаны, использовать их
         HashSet<string> extensions = new();
-        if (args.Length >= 2)
+        if (args.Length >= 1)
         {
-            extensions = args[1].Split(',', StringSplitOptions.RemoveEmptyEntries)
+            extensions = args[0].Split(',', StringSplitOptions.RemoveEmptyEntries)
                                 .Select(ext => ext.Trim().ToLowerInvariant())
                                 .ToHashSet();
         }
