@@ -1,33 +1,31 @@
 # ProjectContextDescriptor
 
-## 🧾 Описание
+A console application in C# for generating the structure and contents of a project in JSON and text format. Designed to extract the context of a project, including the ability to manually select files and directories of interest through the `pcd_context.json` configuration.
 
-Консольное приложение на C# для формирования структуры и содержимого проекта в формате JSON и текстовом виде. Предназначено для извлечения контекста проекта, в том числе с возможностью ручного отбора интересующих файлов и каталогов через конфигурацию `pcd_context.json`.
-
-Подходит для подготовки данных для нейросетей, анализа проектов, создания семантического индекса и других задач.
+Suitable for preparing data for neural networks, analyzing projects, creating a semantic index, and other tasks.
 
 ---
 
-## 📦 Функциональность
+## 📦 Functionality
 
-- 🔍 Рекурсивный обход каталога проекта
-- 🗂 Формирование JSON-файла со структурой проекта (`project_structure.json`)
-- 🧠 Формирование текстового файла с содержимым файлов (`project_content.txt`)
-- 🛠 Команда `struct` — формирование только структуры в `pcd_context.json`
-- ✍️ Возможность вручную редактировать `pcd_context.json` и использовать его как фильтр
-- 🧾 Поддержка фильтрации по расширениям или автоматическое определение "текстовости"
-- 🌐 Автоматическое определение кодировок с помощью Ude
-- ❌ Не учитывает `.gitignore`
-- ✅ Кроссплатформенность (Windows/Linux)
+- 🔍 Recursive traversal of the project directory
+- 🗂 Generating a JSON file with the project structure (`project_structure.json`)
+- 🧠 Generating a text file with the contents of the files (`project_content.txt`)
+- 🛠 The `struct` command — generating only the structure in `pcd_context.json`
+- ✍️ Ability to manually edit `pcd_context.json` and use it as a filter
+- 🧾 Support for filtering by extensions or automatic detection of "textuality"
+- 🌐 Automatic detection of encodings using Ude
+- ❌ Does not take `.gitignore` into account
+- ✅ Cross-platform (Windows/Linux)
 
 ---
 
-## ⚙️ Установка и запуск
+## ⚙️ Installation and launch
 
-### 🔧 Требования
+### 🔧 Requirements
 - [.NET SDK 8.0](https://dotnet.microsoft.com/download)
 
-### 🚀 Сборка
+### 🚀 Build
 
 #### Windows:
 ```bash
@@ -42,86 +40,86 @@ dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishSingleFil
 
 ---
 
-## 🖥 Использование
+## 🖥 Usage
 
-### Полный режим (сбор структуры и содержимого):
+### Full mode (gather structure and contents):
 
 ```bash
 dotnet run -- ".cs,.json"
 ```
 
-### Только структура (`struct`):
+### Structure only (`struct`):
 
 ```bash
 dotnet run -- struct
 ```
 
-* Будет создан файл `pcd_context.json`, отражающий текущую структуру проекта
-* Его можно отредактировать вручную, оставив только нужные каталоги и файлы
+* This will create a file `pcd_context.json`, reflecting the current project structure
+* It can be edited manually, leaving only the necessary directories and files
 
-### Пример структуры `pcd_context.json`:
+### Example of the `pcd_context.json` structure:
 
 ```json
 {
-  ".": ["Program.cs", "README.md"],
-  "Utils": {
-    ".": ["Helpers.cs"]
-  }
+".": ["Program.cs", "README.md"],
+"Utils": {
+".": ["Helpers.cs"]
+}
 }
 ```
 
-Если файл `pcd_context.json` существует — программа использует его в качестве фильтра.
+If the `pcd_context.json` file exists, the program uses it as a filter.
 
 ---
 
-## 📄 Выходные файлы
+## 📄 Output files
 
-| Файл                     | Назначение                                |
+| File | Purpose |
 | ------------------------ | ----------------------------------------- |
-| `project_structure.json` | Структура проекта (с учётом фильтрации)   |
-| `project_content.txt`    | Содержимое файлов из структуры            |
-| `pcd_context.json`       | (опционально) структура, заданная вручную |
+| `project_structure.json` | Project structure (taking into account filtering) |
+| `project_content.txt` | Contents of files from the structure |
+| `pcd_context.json` | (optional) manually defined structure |
 
 ---
 
-## 🛠 Технологии
+## 🛠 Technologies
 
-* Язык: C# (.NET 6/7/8)
-* Библиотеки:
+* Language: C# (.NET 6/7/8)
+* Libraries:
 
-  * `Ude.NetStandard` — для определения кодировки
-* Архитектура:
+* `Ude.NetStandard` — for encoding detection
+* Architecture:
 
-  * `StructureBuilder.cs` — логика структуры
-  * `ContentBuilder.cs` — логика контента
-  * `EncodingHelper.cs` — определение кодировки и фильтрация
+* `StructureBuilder.cs` — structure logic
+* `ContentBuilder.cs` — content logic
+* `EncodingHelper.cs` — encoding detection and filtering
 
 ---
 
-## 🗂 Пример результата
+## 🗂 Result example
 
 ### `project_structure.json`
 
 ```json
-	{
-	".": ["Program.cs"],
-	"Utils": {
-		".": ["Helpers.cs"]
-	}
-	}
+{
+".": ["Program.cs"],
+"Utils": {
+".": ["Helpers.cs"]
+}
+}
 ```
 
 ### `project_content.txt`
 
 ````
-	File: Program.cs
-	```
-	using System;
+File: Program.cs
+```
+using System; 
 
-	class Program {
-	static void Main() {
-	Console.WriteLine("Hello, world!");
-	}
-	}
-	```
+class Program { 
+static void Main() { 
+Console.WriteLine("Hello, world!"); 
+} 
+} 
+```
 ````
