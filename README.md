@@ -1,8 +1,6 @@
-# ProjectContextDescriptor
+# PCD (project context descriptor)
 
-A console application in C# for generating the structure and contents of a project in JSON and text format. Designed to extract the context of a project, including the ability to manually select files and directories of interest through the `pcd_context.json` configuration.
-
-Suitable for preparing data for neural networks, analyzing projects, creating a semantic index, and other tasks.
+Project context parser for neural networks.
 
 ---
 
