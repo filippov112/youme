@@ -121,3 +121,6 @@ Console.WriteLine("Hello, world!");
 } 
 ```
 ````
+
+---
+[LICENCE](LICENCE)
