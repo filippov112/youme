@@ -123,4 +123,4 @@ Console.WriteLine("Hello, world!");
 ````
 
 ---
-[LICENCE](LICENCE)
+[LICENSE](LICENSE)
