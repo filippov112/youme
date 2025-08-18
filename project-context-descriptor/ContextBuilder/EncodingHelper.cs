@@ -5,19 +5,32 @@ namespace ProjectContextDescriptor.ContextBuilder;
 
 public static class EncodingHelper
 {
-    public static bool ShouldInclude(string filePath, HashSet<string> extensions)
+    private static readonly string[] reflexingFiles = { "project_structure.json", "project_content.txt", "pcd_context.json" };
+
+    /// <summary>
+    /// Можно ли парсить конкретный файл
+    /// </summary>
+    /// <param name="root">Корневой каталог</param>
+    /// <param name="directory">Относительный путь от корня к файлу</param>
+    /// <param name="filename">Название файла</param>
+    /// <param name="extensions">Допустимые расширения файлов</param>
+    /// <returns>Разрешение на парсинг</returns>
+    public static bool ShouldInclude(string root, string directory, string filename, HashSet<string> extensions)
     {
-        Console.WriteLine(filePath);
-        // Если указаны расширения — фильтровать по ним
+        // Исключаем само-парсинг
+        if (Path.Combine(Directory.GetCurrentDirectory(), filename) == Path.Combine(root, directory, filename) && reflexingFiles.Contains(filename))
+            return false;
+
+        string fullpath = Path.Combine(root, directory, filename);
+        // Если указаны расширения — фильтровать исключительно по ним
         if (extensions.Count > 0)
-        {
-            return extensions.Contains(Path.GetExtension(filePath).ToLowerInvariant());
-        }
+            return extensions.Contains(Path.GetExtension(filename).ToLowerInvariant());
+     
 
         // Иначе проверка на "текстовость" по байтам
         try
         {
-            using var stream = File.OpenRead(filePath);
+            using var stream = File.OpenRead(fullpath);
             int readByte;
             int maxBytes = 512;
             int totalRead = 0;
@@ -37,7 +50,12 @@ public static class EncodingHelper
         }
     }
 
-    public static string ReadFileWithEncoding(string path)
+    /// <summary>
+    /// Функция парсинга файла
+    /// </summary>
+    /// <param name="path">Путь к файлу</param>
+    /// <returns>Содержимое файла</returns>
+    public static string ParseFile(string path)
     {
         try
         {

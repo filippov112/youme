@@ -5,23 +5,30 @@ namespace ProjectContextDescriptor.ContextBuilder;
 
 public static class StructureBuilder
 {
+
+    /// <summary>
+    /// Загружает карту парсинга (pcd_context.json) в программу
+    /// </summary>
+    /// <param name="basePath">Сканируемый каталог</param>
+    /// <returns>Словарь файлов для парсинга</returns>
     public static Dictionary<string, object>? LoadCustom(string basePath)
     {
         string pcdPath = Path.Combine(basePath, "pcd_context.json");
-        if (!File.Exists(pcdPath)) return null;
+        if (!File.Exists(pcdPath)) 
+            return null;
 
         try
         {
-            var json = File.ReadAllText(pcdPath);
-            var element = JsonSerializer.Deserialize<JsonElement>(json);
+            var str = File.ReadAllText(pcdPath);
+            var objStructure = JsonSerializer.Deserialize<JsonElement>(str);
 
-            if (element.ValueKind != JsonValueKind.Object)
+            if (objStructure.ValueKind != JsonValueKind.Object)
             {
                 Console.WriteLine("[Формат pcd_context.json некорректен]");
                 return null;
             }
 
-            return ConvertToDictionary(element);
+            return ConvertToDictionary(objStructure);
         }
         catch (Exception ex)
         {
@@ -30,38 +37,52 @@ public static class StructureBuilder
         }
     }
 
+    /// <summary>
+    /// Рекурсивно раскладывает json-объект карты парсинга в словарь файлов
+    /// </summary>
+    /// <param name="element">Карта парсинга (json-объект)</param>
+    /// <returns>Словарь файлов</returns>
     private static Dictionary<string, object> ConvertToDictionary(JsonElement element)
     {
         var result = new Dictionary<string, object>();
 
         foreach (var prop in element.EnumerateObject())
         {
-            if (prop.Value.ValueKind == JsonValueKind.Array)
+            if (prop.Value.ValueKind == JsonValueKind.Array) // Список имен файлов
             {
                 var list = prop.Value.EnumerateArray()
                     .Where(e => e.ValueKind == JsonValueKind.String)
                     .Select(e => e.GetString()!)
                     .ToList();
 
-                result[prop.Name] = list;
+                result[prop.Name] = list; // key = ".", val = [filename1, filename2, ...]
             }
-            else if (prop.Value.ValueKind == JsonValueKind.Object)
+            else if (prop.Value.ValueKind == JsonValueKind.Object) // Вложенный подкаталог
             {
-                result[prop.Name] = ConvertToDictionary(prop.Value);
+                result[prop.Name] = ConvertToDictionary(prop.Value); // key = "fullpath/", val = { ".": [filename11, filename22, ...], ... }
             }
         }
 
         return result;
     }
 
-    public static object Build(
-    string rootPath,
-    string currentPath,
-    HashSet<string> extensions,
-    Dictionary<string, object>? customStructure = null)
+    /// <summary>
+    /// Рекурсивная функция построения дерева проекта (для словаря парсинга, либо для project_structure.json)
+    /// </summary>
+    /// <param name="rootPath">Корневой каталог</param>
+    /// <param name="currentPath">Текущий подкаталог (относительный путь по отношению к корневому каталогу)</param>
+    /// <param name="extensions">Допустимые расширения файлов</param>
+    /// <param name="customStructure">Словарь парсинга (для ограничения сканирования)</param>
+    /// <returns>Дерево проекта (словарь словарей файлов)</returns>
+    public static Dictionary<string, object> Build(
+        string rootPath,
+        string currentPath,
+        HashSet<string> extensions,
+        Dictionary<string, object>? customStructure = null)
     {
         var result = new Dictionary<string, object>();
 
+        // По карте парсинга
         if (customStructure != null)
         {
             foreach (var kv in customStructure)
@@ -71,7 +92,7 @@ public static class StructureBuilder
                     if (kv.Value is List<string> files1)
                     {
                         result["."] = files1
-                            .Where(file => EncodingHelper.ShouldInclude(Path.Combine(rootPath, currentPath, file), extensions))
+                            .Where(file => EncodingHelper.ShouldInclude(rootPath, currentPath, file, extensions))
                             .ToList();
                     }
                 }
@@ -86,9 +107,9 @@ public static class StructureBuilder
             return result;
         }
 
-        // Обычный режим
+        // Все подряд
         var files2 = Directory.EnumerateFiles(currentPath)
-            .Where(f => EncodingHelper.ShouldInclude(f, extensions))
+            .Where(f => EncodingHelper.ShouldInclude(rootPath, currentPath, Path.GetFileName(f), extensions))
             .Select(Path.GetFileName)
             .ToList();
 
@@ -108,7 +129,11 @@ public static class StructureBuilder
         return result;
     }
 
-
+    /// <summary>
+    /// Превращает объект в строку
+    /// </summary>
+    /// <param name="structure"></param>
+    /// <returns></returns>
     public static string Serialize(object structure)
     {
         return JsonSerializer.Serialize(structure, new JsonSerializerOptions
