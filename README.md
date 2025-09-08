@@ -13,7 +13,6 @@ Project context parser for neural networks.
 - ✍️ Ability to manually edit `pcd_context.json` and use it as a filter
 - 🧾 Support for filtering by extensions or automatic detection of "textuality"
 - 🌐 Automatic detection of encodings using Ude
-- ❌ Does not take `.gitignore` into account
 - ✅ Cross-platform (Windows/Linux)
 
 ---
