@@ -13,11 +13,9 @@ Project context parser for neural networks.
 - ✍️ Ability to manually edit `pcd_context.json` and use it as a filter
 - 🧾 Support for filtering by extensions or automatic detection of "textuality"
 - 🌐 Automatic detection of encodings using Ude
-- ❌ Does not take `.gitignore` into account
 - ✅ Cross-platform (Windows/Linux)
 
 ---
-
 ## ⚙️ Installation and launch
 
 ### 🔧 Requirements
@@ -29,7 +27,6 @@ Project context parser for neural networks.
 ```bash
 dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 ```
-
 #### Linux/macOS:
 
 ```bash
@@ -40,20 +37,19 @@ dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishSingleFil
 
 ## 🖥 Usage
 
-### Full mode (gather structure and contents):
+For Windows: Place the compiled executable file anywhere on the computer. Add the path to the directory with the file to the "PATH" environment variable. After that, we can call commands directly from the terminal (for "pcd.exe"):
 
+Example of analysis with a filter by file type:
 ```bash
-dotnet run -- ".cs,.json"
+pcd ".cs,.json"
 ```
 
-### Structure only (`struct`):
-
+Generating the filter file `pcd_context.json` (also supports selecting file types):
 ```bash
-dotnet run -- struct
+pdc struct
 ```
 
-* This will create a file `pcd_context.json`, reflecting the current project structure
-* It can be edited manually, leaving only the necessary directories and files
+If the scanned directory contains `pcd_context.json`, it is used as a primary filter. It can be edited manually, leaving only the necessary directories and files.
 
 ### Example of the `pcd_context.json` structure:
 
@@ -77,20 +73,6 @@ If the `pcd_context.json` file exists, the program uses it as a filter.
 | `project_structure.json` | Project structure (taking into account filtering) |
 | `project_content.txt` | Contents of files from the structure |
 | `pcd_context.json` | (optional) manually defined structure |
-
----
-
-## 🛠 Technologies
-
-* Language: C# (.NET 6/7/8)
-* Libraries:
-
-* `Ude.NetStandard` — for encoding detection
-* Architecture:
-
-* `StructureBuilder.cs` — structure logic
-* `ContentBuilder.cs` — content logic
-* `EncodingHelper.cs` — encoding detection and filtering
 
 ---
 
