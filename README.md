@@ -46,7 +46,7 @@ pcd ".cs,.json"
 
 Generating the filter file `pcd_context.json` (also supports selecting file types):
 ```bash
-pdc struct
+pcd struct
 ```
 
 If the scanned directory contains `pcd_context.json`, it is used as a primary filter. It can be edited manually, leaving only the necessary directories and files.
