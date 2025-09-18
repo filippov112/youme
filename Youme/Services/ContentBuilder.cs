@@ -1,33 +1,54 @@
+using System.IO;
 using System.Text;
 using Ude;
 
-namespace ProjectContextDescriptor.ContextBuilder;
+namespace Youme.Services;
 
-public static class EncodingHelper
+public static class ContentBuilder
 {
-    private static readonly string[] reflexingFiles = { "project_structure.json", "project_content.txt", "pcd_context.json" };
+    /// <summary>
+    /// Формирует контекст проекта
+    /// </summary>
+    /// <param name="rootPath"></param>
+    /// <param name="extensions"></param>
+    /// <param name="structure"></param>
+    /// <returns></returns>
+    public static string Build(List<string> files)
+    {
+        var sb = new StringBuilder();
+
+        foreach (var file in files.Where(f => ShouldInclude(f)))
+        {
+            AppendFileContent(sb, file);
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Функция добавления содержимого в конец текста
+    /// </summary>
+    /// <param name="sb">Текст содержимого всех файлов (StringBuilder)</param>
+    /// <param name="fullPath">Абсолютный путь к файлу</param>
+    private static void AppendFileContent(StringBuilder sb, string fullPath)
+    {
+        string relativePath = Path.GetRelativePath(StorageService.ProjectFolder, fullPath);
+        sb.AppendLine($"File: {relativePath}");
+        sb.AppendLine("`````");
+
+        sb.AppendLine(ParseFile(fullPath));
+
+        sb.AppendLine("`````");
+        sb.AppendLine();
+    }
 
     /// <summary>
     /// Можно ли парсить конкретный файл
     /// </summary>
-    /// <param name="root">Корневой каталог</param>
-    /// <param name="directory">Относительный путь от корня к файлу</param>
-    /// <param name="filename">Название файла</param>
-    /// <param name="extensions">Допустимые расширения файлов</param>
+    /// <param name="fullpath">Абсолютный путь к файлу</param>
     /// <returns>Разрешение на парсинг</returns>
-    public static bool ShouldInclude(string root, string directory, string filename, HashSet<string> extensions)
+    private static bool ShouldInclude(string fullpath)
     {
-        // Исключаем само-парсинг
-        if (Path.Combine(Directory.GetCurrentDirectory(), filename) == Path.Combine(root, directory, filename) && reflexingFiles.Contains(filename))
-            return false;
-
-        string fullpath = Path.Combine(root, directory, filename);
-        // Если указаны расширения — фильтровать исключительно по ним
-        if (extensions.Count > 0)
-            return extensions.Contains(Path.GetExtension(filename).ToLowerInvariant());
-     
-
-        // Иначе проверка на "текстовость" по байтам
         try
         {
             using var stream = File.OpenRead(fullpath);
@@ -53,13 +74,13 @@ public static class EncodingHelper
     /// <summary>
     /// Функция парсинга файла
     /// </summary>
-    /// <param name="path">Путь к файлу</param>
+    /// <param name="fullpath">Путь к файлу</param>
     /// <returns>Содержимое файла</returns>
-    public static string ParseFile(string path)
+    private static string ParseFile(string fullpath)
     {
         try
         {
-            using var fs = File.OpenRead(path);
+            using var fs = File.OpenRead(fullpath);
 
             // Проверка BOM
             if (fs.Length >= 3)
@@ -95,7 +116,8 @@ public static class EncodingHelper
         }
         catch (Exception ex)
         {
-            return $"[Ошибка определения кодировки: {ex.Message}]";
+            MessageBox.Show($"Ошибка определения кодировки: {ex.Message}");
+            throw;
         }
     }
 }
