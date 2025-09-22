@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Youme.ViewModels;
 
 namespace Youme.Views
 {
@@ -19,9 +20,30 @@ namespace Youme.Views
     /// </summary>
     public partial class Settings : Window
     {
+        private SettingsVM vm;
         public Settings()
         {
             InitializeComponent();
+            vm = new SettingsVM(this);
+            DataContext = vm;
+        }
+
+        private void DeactivateAllPanels()
+        {
+            generalSettings.Visibility = Visibility.Hidden;
+            projectSettings.Visibility = Visibility.Hidden;
+        }
+
+        private void btnProjectSettings_Click(object sender, RoutedEventArgs e)
+        {
+            DeactivateAllPanels();
+            projectSettings.Visibility = Visibility.Visible;
+        }
+
+        private void btnGeneralSettings_Click(object sender, RoutedEventArgs e)
+        {
+            DeactivateAllPanels();
+            generalSettings.Visibility = Visibility.Visible;
         }
     }
 }

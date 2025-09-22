@@ -49,7 +49,9 @@ namespace Youme
 
         private void BuildPrompt(object sender, RoutedEventArgs e)
         {
-            editorAvalon.Text = ContentBuilder.Build(vm.Project.AllItems.Where(x => x.IsSelected && x.Type == ViewModels.Tree.ItemType.File).Select(x => x.FullPath).ToList());
+            var content = ContentBuilder.Build(vm.Project.AllItems.Where(x => x.IsSelected && x.Type == ViewModels.Tree.ItemType.File).Select(x => x.FullPath).ToList());
+
+            editorAvalon.Text = StorageService.GetPrompt(content, txtMessage.Text);
         }
 
         #region Drag-drop tree elements

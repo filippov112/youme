@@ -33,13 +33,7 @@ public static class ContentBuilder
     private static void AppendFileContent(StringBuilder sb, string fullPath)
     {
         string relativePath = Path.GetRelativePath(StorageService.ProjectFolder, fullPath);
-        sb.AppendLine($"File: {relativePath}");
-        sb.AppendLine("`````");
-
-        sb.AppendLine(ParseFile(fullPath));
-
-        sb.AppendLine("`````");
-        sb.AppendLine();
+        StorageService.AddFile(sb, relativePath, ParseFile(fullPath));
     }
 
     /// <summary>
