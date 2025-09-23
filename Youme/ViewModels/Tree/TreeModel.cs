@@ -41,9 +41,12 @@ namespace Youme.ViewModels.Tree
         public void LoadProject(string rootPath)
         {
             Items.Clear();
+            _serviceDir = Path.Combine(Program.Storage.ProjectFolder, Youme.Services.StorageService.LocalConfigFolder);
             var rootItem = CreateTreeItem(new DirectoryInfo(rootPath));
             Items.Add(rootItem);
         }
+
+        private string _serviceDir;
 
         /// <summary>
         /// Рекурсивный перебор проекта
@@ -67,6 +70,8 @@ namespace Youme.ViewModels.Tree
                 {
                     foreach (var dir in directory.GetDirectories())
                     {
+                        if (Path.Combine(dir.FullName) == _serviceDir)
+                            continue;
                         if ((dir.Attributes & FileAttributes.Hidden) == 0)
                         {
                             var child = CreateTreeItem(dir);

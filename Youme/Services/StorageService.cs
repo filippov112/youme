@@ -9,15 +9,15 @@ public class StorageService
     /// <summary>
     /// Относительный маршрут настроек программы
     /// </summary>
-    private string GlobalConfigPath = "./config/global_config.json";
+    public const string GlobalConfigPath = "./config/global_config.json";
     /// <summary>
     /// Файл настроек проекта
     /// </summary>
-    private string LocalConfigFileName = "local_config.json";
+    public const string LocalConfigFileName = "local_config.json";
     /// <summary>
     /// Каталог служебных файлов проекта
     /// </summary>
-    private string LocalConfigFolder = ".youme";
+    public const string LocalConfigFolder = ".youme";
     /// <summary>
     /// - ###input### - вводная часть
     /// </summary>
