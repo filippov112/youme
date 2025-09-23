@@ -78,6 +78,9 @@
             TextWrapping="Wrap"
             AllowDrop="True"
             Drop="TextBox_Drop"
+            AutoWordSelection="True" 
+            AcceptsTab="True" 
+            AcceptsReturn="True" 
             />
         <Button x:Name="btnCopy" Grid.Column="2" Content="Копировать" Grid.Row="3" Click="BuildPrompt"/>
         <Grid Grid.Column="2" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Bottom">

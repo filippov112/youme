@@ -8,6 +8,7 @@ using Youme.Services;
 using Youme.ViewModels;
 using Youme.ViewModels.Tree;
 using Youme.Views;
+using Clipboard = System.Windows.Clipboard;
 using DataFormats = System.Windows.DataFormats;
 using DataObject = System.Windows.DataObject;
 using DragDropEffects = System.Windows.DragDropEffects;
@@ -59,6 +60,7 @@ namespace Youme
 
             lWordCounter.Content = tokens.Count().ToString();
             editorAvalon.Text = prompt;
+            Clipboard.SetText(prompt);
         }
 
         #region Drag-drop tree elements
