@@ -1,4 +1,5 @@
-﻿using Youme.Services;
+﻿using Youme.Model;
+using Youme.Services;
 using Youme.Views;
 
 namespace Youme.ViewModels
@@ -9,54 +10,82 @@ namespace Youme.ViewModels
         public SettingsVM(Settings view)
         {
             this.view = view;
+            GlobalConfig = Program.Storage.GConfig.Copy();
+            LocalConfig = Program.Storage.LConfig.Copy();
         }
+
+        public GlobalConfig GlobalConfig { get; private set; }
+        public LocalConfig LocalConfig { get; private set; }
 
         public string InputProjectPrompt
         {
-            get { return StorageService.InputProjectPrompt; }
+            get => LocalConfig.InputProjectPrompt;
             set 
             {
-                StorageService.InputProjectPrompt = value;
+                if (LocalConfig.InputProjectPrompt != value)
+                    BtnSaveIsActive = true;
+                LocalConfig.InputProjectPrompt = value;
                 OnPropertyChanged();
             }
         }
 
         public string StructurePromptLocal
         {
-            get { return StorageService.StructurePromptLocal; }
+            get => LocalConfig.StructurePromptLocal;
             set 
             {
-                StorageService.StructurePromptLocal = value;
+                if (LocalConfig.StructurePromptLocal != value)
+                    BtnSaveIsActive = true;
+                LocalConfig.StructurePromptLocal = value;
                 OnPropertyChanged();
             }
         }
 
         public string StructurePromptGlobal
         {
-            get { return StorageService.StructurePromptGlobal; }
+            get => GlobalConfig.StructurePromptGlobal;
             set 
-            { 
-                StorageService.StructurePromptGlobal = value;
+            {
+                if (GlobalConfig.StructurePromptGlobal != value)
+                    BtnSaveIsActive = true;
+                GlobalConfig.StructurePromptGlobal = value;
                 OnPropertyChanged();
             }
         }
 
         public string UserSettingsPrompt
         {
-            get { return StorageService.UserSettingsPrompt; }
+            get => GlobalConfig.UserSettingsPrompt;
             set 
-            { 
-                StorageService.UserSettingsPrompt = value;
+            {
+                if (GlobalConfig.UserSettingsPrompt != value)
+                    BtnSaveIsActive = true;
+                GlobalConfig.UserSettingsPrompt = value;
                 OnPropertyChanged();
             }
         }
 
         public string StyleFileBlock
         {
-            get { return StorageService.StyleFileBlock; }
+            get => GlobalConfig.StyleFileBlock;
             set 
-            { 
-                StorageService.StyleFileBlock = value;
+            {
+                if (GlobalConfig.StyleFileBlock != value)
+                    BtnSaveIsActive = true;
+                GlobalConfig.StyleFileBlock = value;
+                OnPropertyChanged();
+            }
+        }
+
+
+
+        private bool _btnSaveIsActive = false;
+
+        public bool BtnSaveIsActive { 
+            get => _btnSaveIsActive; 
+            set
+            {
+                _btnSaveIsActive = value;
                 OnPropertyChanged();
             }
         }

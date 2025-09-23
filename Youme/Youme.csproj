@@ -25,4 +25,8 @@
     <Resource Include="Resources\folder.png" />
   </ItemGroup>
 
+    <PropertyGroup>
+	    <StartupObject>Youme.Program</StartupObject>
+    </PropertyGroup>
+
 </Project>

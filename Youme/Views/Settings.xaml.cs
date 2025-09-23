@@ -26,6 +26,7 @@ namespace Youme.Views
             InitializeComponent();
             vm = new SettingsVM(this);
             DataContext = vm;
+            btnProjectSettings.IsEnabled = !string.IsNullOrEmpty(Program.Storage.ProjectFolder);
         }
 
         private void DeactivateAllPanels()
@@ -44,6 +45,12 @@ namespace Youme.Views
         {
             DeactivateAllPanels();
             generalSettings.Visibility = Visibility.Visible;
+        }
+
+        private void SaveSettings(object sender, RoutedEventArgs e)
+        {
+            Program.Storage.SaveSettings(vm.GlobalConfig, vm.LocalConfig);
+            vm.BtnSaveIsActive = false;
         }
     }
 }

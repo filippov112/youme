@@ -1,30 +1,76 @@
 using System.Text;
+using Youme.Model;
 
 namespace Youme.Services;
 
-public static class StorageService
+public class StorageService
 {
-    // - ###input### - вводная часть
-    // - ###project### - структура проекта
-    // - ###settings### - пользовательские настройки                                  
-    // - ###request### - запрос пользователя
-    // - ###path### - относительный путь к файлу
-    // - ###content### - содержание файла
-
+    #region Constants
+    /// <summary>
+    /// Относительный маршрут настроек программы
+    /// </summary>
+    private string GlobalConfigPath = "./config/global_config.json";
+    /// <summary>
+    /// Файл настроек проекта
+    /// </summary>
+    private string LocalConfigFileName = "local_config.json";
+    /// <summary>
+    /// Каталог служебных файлов проекта
+    /// </summary>
+    private string LocalConfigFolder = ".youme";
+    /// <summary>
+    /// - ###input### - вводная часть
+    /// </summary>
     public const string KEY_WORD_INPUT = "###input###";
+    /// <summary>
+    /// - ###project### - структура проекта
+    /// </summary>
     public const string KEY_WORD_PROJECT = "###project###";
-    public const string KEY_WORD_SETTINGS = "###settings###";
+    /// <summary>
+    /// - ###settings### - пользовательские настройки 
+    /// </summary>
+    public const string KEY_WORD_SETTINGS = "###settings###";                                 
+    /// <summary>
+    /// - ###request### - запрос пользователя
+    /// </summary>
     public const string KEY_WORD_REQUEST = "###request###";
+    /// <summary>
+    /// - ###path### - относительный путь к файлу
+    /// </summary>
     public const string KEY_WORD_PATH = "###path###";
+    /// <summary>
+    /// - ###content### - содержание файла
+    /// </summary>
     public const string KEY_WORD_CONTENT = "###content###";
+    #endregion
 
-    public static string InputProjectPrompt { get; set; } = "Помоги мне пожалуйста со следующим проектом. Вот его структура:";
-    public static string StructurePromptLocal { get; set; } = string.Empty;
-    public static string StructurePromptGlobal { get; set; } = $"{KEY_WORD_INPUT}\n`````\n{KEY_WORD_PROJECT}\n`````\n{KEY_WORD_REQUEST}\n\n{KEY_WORD_SETTINGS}";
-    public static string UserSettingsPrompt { get; set; } = "При ответе будь краток и лаконичен.";
-    public static string StyleFileBlock { get; set; } = $"Файл: {KEY_WORD_PATH}\n````\n{KEY_WORD_CONTENT}\n````\n";
+    private ConfigService cs;
+    public StorageService()
+    {
+        cs = new(GlobalConfigPath, LocalConfigFileName, LocalConfigFolder);
+    }
+    public void LoadGlobalConfig()
+    {
+        cs.LoadGlobalConfig();
+    }
+    public void LoadLocalConfig(string directoryPath)
+    {
+        cs.LoadLocalConfig(directoryPath);
+    }
 
+    public LocalConfig LConfig => cs.LC;
+    public GlobalConfig GConfig => cs.GC;
 
+    public void SaveSettings(GlobalConfig globalConfig, LocalConfig localConfig)
+    {
+        cs.LC = localConfig;
+        cs.GC = globalConfig;
+        cs.SaveGlobalConfig();
+        if (!string.IsNullOrEmpty(ProjectFolder))
+            cs.SaveLocalConfig(ProjectFolder);
+    }
+
+    
     // Методы обработки текста
 
     /// <summary>
@@ -33,14 +79,14 @@ public static class StorageService
     /// <param name="projectStructure">Содержание проекта</param>
     /// <param name="userRequest">Пользовательский запрос</param>
     /// <returns></returns>
-    public static string GetPrompt(string projectStructure, string userRequest)
+    public string GetPrompt(string projectStructure, string userRequest)
     {
         // Если не задан локальный промпт структуры, используем глобальный
-        string result = string.IsNullOrWhiteSpace(StructurePromptLocal) ? StructurePromptGlobal : StructurePromptLocal;
+        string result = string.IsNullOrWhiteSpace(cs.LC.StructurePromptLocal) ? cs.GC.StructurePromptGlobal : cs.LC.StructurePromptLocal;
         
-        result = result.Replace(KEY_WORD_INPUT, InputProjectPrompt);
+        result = result.Replace(KEY_WORD_INPUT, cs.LC.InputProjectPrompt);
         result = result.Replace(KEY_WORD_PROJECT, projectStructure);
-        result = result.Replace(KEY_WORD_SETTINGS, UserSettingsPrompt);
+        result = result.Replace(KEY_WORD_SETTINGS, cs.GC.UserSettingsPrompt);
         result = result.Replace(KEY_WORD_REQUEST, userRequest);
         return result;
     }
@@ -51,14 +97,23 @@ public static class StorageService
     /// <param name="relativePath">Путь к файлу</param>
     /// <param name="fileContent">Содержание</param>
     /// <returns></returns>
-    public static void AddFile(StringBuilder sb, string relativePath, string fileContent)
+    public void AddFile(StringBuilder sb, string relativePath, string fileContent)
     {
         sb.AppendLine(
-            StyleFileBlock
+            cs.GC.StyleFileBlock
             .Replace(KEY_WORD_PATH, relativePath)
             .Replace(KEY_WORD_CONTENT, fileContent)
         );
     }
 
-    public static string ProjectFolder { get; set; } = string.Empty;
+    private string _projectFolder = string.Empty;
+    public string ProjectFolder
+    {
+        get => _projectFolder;
+        set
+        {
+            _projectFolder = value;
+            LoadLocalConfig(_projectFolder);
+        }
+    }
 }

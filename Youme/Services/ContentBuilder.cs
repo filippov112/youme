@@ -32,8 +32,8 @@ public static class ContentBuilder
     /// <param name="fullPath">Абсолютный путь к файлу</param>
     private static void AppendFileContent(StringBuilder sb, string fullPath)
     {
-        string relativePath = Path.GetRelativePath(StorageService.ProjectFolder, fullPath);
-        StorageService.AddFile(sb, relativePath, ParseFile(fullPath));
+        string relativePath = Path.GetRelativePath(Program.Storage.ProjectFolder, fullPath);
+        Program.Storage.AddFile(sb, relativePath, ParseFile(fullPath));
     }
 
     /// <summary>

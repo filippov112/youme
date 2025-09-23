@@ -36,7 +36,7 @@ namespace Youme
 
                 if (folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    StorageService.ProjectFolder = folderDialog.SelectedPath;
+                    Program.Storage.ProjectFolder = folderDialog.SelectedPath;
                     vm.Project.LoadProject(folderDialog.SelectedPath);
                 }
             }
@@ -51,7 +51,7 @@ namespace Youme
         private void BuildPrompt(object sender, RoutedEventArgs e)
         {
             var content = ContentBuilder.Build(vm.Project.AllItems.Where(x => x.IsSelected && x.Type == ViewModels.Tree.ItemType.File).Select(x => x.FullPath).ToList());
-            string prompt = StorageService.GetPrompt(content, txtMessage.Text);
+            string prompt = Program.Storage.GetPrompt(content, txtMessage.Text);
 
             // Для GPT-3.5 и GPT-4
             var encoding = GptEncoding.GetEncoding("cl100k_base");
@@ -84,7 +84,7 @@ namespace Youme
                     if (treeViewItem != null)
                     {
                         TreeElement item = (TreeElement)treeViewItem.DataContext;
-                        DataObject data = new DataObject(DataFormats.Text, Path.GetRelativePath(StorageService.ProjectFolder, item.FullPath));
+                        DataObject data = new DataObject(DataFormats.Text, Path.GetRelativePath(Program.Storage.ProjectFolder, item.FullPath));
                         
                         if (!_isDragging)
                         {
