@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using SharpToken;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -50,8 +51,14 @@ namespace Youme
         private void BuildPrompt(object sender, RoutedEventArgs e)
         {
             var content = ContentBuilder.Build(vm.Project.AllItems.Where(x => x.IsSelected && x.Type == ViewModels.Tree.ItemType.File).Select(x => x.FullPath).ToList());
+            string prompt = StorageService.GetPrompt(content, txtMessage.Text);
 
-            editorAvalon.Text = StorageService.GetPrompt(content, txtMessage.Text);
+            // Для GPT-3.5 и GPT-4
+            var encoding = GptEncoding.GetEncoding("cl100k_base");
+            var tokens = encoding.Encode(prompt);
+
+            lWordCounter.Content = tokens.Count().ToString();
+            editorAvalon.Text = prompt;
         }
 
         #region Drag-drop tree elements
