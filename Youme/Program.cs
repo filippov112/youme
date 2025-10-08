@@ -1,4 +1,5 @@
 ﻿
+using System.Text;
 using Youme.Services;
 
 namespace Youme
@@ -10,6 +11,7 @@ namespace Youme
         [STAThread]
         public static void Main(string[] args)
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             Storage = new StorageService();
             Storage.LoadGlobalConfig();
 
