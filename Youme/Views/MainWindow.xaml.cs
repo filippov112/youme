@@ -1,4 +1,5 @@
-﻿using SharpToken;
+﻿using ICSharpCode.AvalonEdit.Highlighting;
+using SharpToken;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -61,6 +62,64 @@ namespace Youme
             lWordCounter.Content = tokens.Count().ToString();
             editorAvalon.Text = prompt;
             Clipboard.SetText(prompt);
+        }
+
+        /// <summary>
+        /// Эндпоинт для обновления содержимого редактора из ViewModel
+        /// </summary>
+        /// <param name="content"></param>
+        public void UpdateEditorContent(string content)
+        {
+            editorAvalon.Text = content;
+        }
+        /// <summary>
+        /// Транслирует выбор элемента в TreeView в открытие документа в редакторе
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (e.NewValue is TreeElement item)
+            {
+                if (item == null || item.Type != ItemType.File)
+                    return;
+                vm?.OpenDocument(item);
+                SetSyntaxHighlightingByExtension(item.FullPath);
+            }
+        }
+        /// <summary>
+        /// Определение подсветки синтаксиса по расширению файла
+        /// </summary>
+        /// <param name="filePath">Путь к файлу</param>
+        private void SetSyntaxHighlightingByExtension(string filePath)
+        {
+            string extension = Path.GetExtension(filePath).ToLower();
+
+            switch (extension)
+            {
+                case ".cs":
+                    editorAvalon.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("C#");
+                    break;
+                case ".xml":
+                case ".config":
+                    editorAvalon.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML");
+                    break;
+                case ".js":
+                    editorAvalon.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("JavaScript");
+                    break;
+                case ".html":
+                    editorAvalon.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("HTML");
+                    break;
+                case ".css":
+                    editorAvalon.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("CSS");
+                    break;
+                case ".py":
+                    editorAvalon.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("Python");
+                    break;
+                default:
+                    editorAvalon.SyntaxHighlighting = null; // Без подсветки
+                    break;
+            }
         }
 
         #region Drag-drop tree elements
