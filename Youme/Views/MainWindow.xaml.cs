@@ -13,6 +13,8 @@ using DataFormats = System.Windows.DataFormats;
 using DataObject = System.Windows.DataObject;
 using DragDropEffects = System.Windows.DragDropEffects;
 using DragEventArgs = System.Windows.DragEventArgs;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using ListBox = System.Windows.Controls.ListBox;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using Point = System.Windows.Point;
 
@@ -39,6 +41,7 @@ namespace Youme
                 {
                     Program.Storage.ProjectFolder = folderDialog.SelectedPath;
                     vm.Project.LoadProject(folderDialog.SelectedPath);
+                    vm.Search.Items = vm.Project.AllItems;
                 }
             }
         }
@@ -118,6 +121,45 @@ namespace Youme
                 string filePath = e.Data.GetData("FilePath") as string;
                 txtMessage.Text = filePath;
                 e.Handled = true;
+            }
+        }
+        #endregion
+
+
+        #region Search
+        // Навигация клавишами
+        private void SearchTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            var viewModel = DataContext as SearchVM<object>;
+            if (viewModel?.FilteredItems.Count > 0)
+            {
+                switch (e.Key)
+                {
+                    case Key.Down:
+                        ResultsListBox.SelectedIndex = 0;
+                        ResultsListBox.Focus();
+                        e.Handled = true;
+                        break;
+                    case Key.Tab:
+                        if (ResultsListBox.Items.Count > 0)
+                        {
+                            viewModel.SelectItem(ResultsListBox.Items[0]);
+                            e.Handled = true;
+                        }
+                        break;
+                }
+            }
+        }
+
+        // Выбор мышью
+        private void ResultsListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var listBox = sender as ListBox;
+            var viewModel = DataContext as SearchVM<object>;
+
+            if (listBox?.SelectedItem != null && viewModel != null)
+            {
+                viewModel.SelectItem(listBox.SelectedItem);
             }
         }
         #endregion

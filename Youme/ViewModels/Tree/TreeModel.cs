@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
+using Youme.Services;
 
 namespace Youme.ViewModels.Tree
 {
@@ -59,6 +60,7 @@ namespace Youme.ViewModels.Tree
             {
                 Name = info.Name,
                 FullPath = info.FullName,
+                Text = ContentBuilder.ShouldInclude(info.FullName) ? ContentBuilder.ParseFile(info.FullName) : string.Empty,
                 Type = info is DirectoryInfo ? ItemType.Folder : ItemType.File,
                 Children = new ObservableCollection<TreeElement>()
             };

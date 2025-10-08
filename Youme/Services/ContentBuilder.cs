@@ -41,7 +41,7 @@ public static class ContentBuilder
     /// </summary>
     /// <param name="fullpath">Абсолютный путь к файлу</param>
     /// <returns>Разрешение на парсинг</returns>
-    private static bool ShouldInclude(string fullpath)
+    public static bool ShouldInclude(string fullpath)
     {
         try
         {
@@ -70,7 +70,7 @@ public static class ContentBuilder
     /// </summary>
     /// <param name="fullpath">Путь к файлу</param>
     /// <returns>Содержимое файла</returns>
-    private static string ParseFile(string fullpath)
+    public static string ParseFile(string fullpath)
     {
         try
         {

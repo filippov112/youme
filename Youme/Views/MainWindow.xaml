@@ -20,10 +20,40 @@
             <ColumnDefinition Width="300"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Menu Grid.ColumnSpan="3">
+        <Menu>
             <Button x:Name="btnOpen" Content="Открыть проект" Click="OpenProject"/>
             <Button x:Name="btnSettings" Content="Настройки" Click="OpenSettings"/>
         </Menu>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBox x:Name="SearchTextBox"
+             Text="{Binding Search.SearchText, UpdateSourceTrigger=PropertyChanged}"
+             PreviewKeyDown="SearchTextBox_PreviewKeyDown"
+             HorizontalAlignment="Stretch"/>
+
+            <Popup x:Name="ResultsPopup"
+               PlacementTarget="{Binding ElementName=SearchTextBox}"
+               Placement="Bottom"
+               IsOpen="{Binding Search.IsPopupOpen}"
+               StaysOpen="False" Grid.Row="1">
+                <ListBox x:Name="ResultsListBox"
+                     ItemsSource="{Binding Search.FilteredItems}"
+                     SelectedItem="{Binding Search.SelectedItem}"
+                     MouseDoubleClick="ResultsListBox_MouseDoubleClick"
+                     MaxHeight="200"
+                     MinWidth="{Binding ActualWidth, ElementName=SearchTextBox}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ResultText}" Padding="5"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Popup>
+        </Grid>
         <TreeView x:Name="treeExplorer" 
                   Grid.Row="1" 
                   Grid.RowSpan="3" 

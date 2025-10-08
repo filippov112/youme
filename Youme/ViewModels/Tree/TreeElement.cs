@@ -11,6 +11,8 @@ namespace Youme.ViewModels.Tree
 
         public string Name { get; set; } = string.Empty;
         public string FullPath { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+
         public ItemType Type { get; set; }
         public ObservableCollection<TreeElement> Children { get; set; } = [];
 
