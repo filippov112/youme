@@ -12,6 +12,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition/>
             <RowDefinition Height="150"/>
             <RowDefinition Height="35"/>
@@ -20,11 +21,11 @@
             <ColumnDefinition Width="300"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Menu>
-            <Button x:Name="btnOpen" Content="Открыть проект" Click="OpenProject"/>
-            <Button x:Name="btnSettings" Content="Настройки" Click="OpenSettings"/>
+        <Menu x:Name="Menu" Grid.ColumnSpan="2">
+            <MenuItem x:Name="btnOpen" Header="Открыть проект" Click="OpenProject"/>
+            <MenuItem x:Name="btnSettings" Header="Настройки" Click="OpenSettings"/>
         </Menu>
-        <Grid Grid.Column="1">
+        <Grid x:Name="SearchGrid" Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -32,30 +33,10 @@
 
             <TextBox x:Name="SearchTextBox"
              Text="{Binding Search.SearchText, UpdateSourceTrigger=PropertyChanged}"
-             PreviewKeyDown="SearchTextBox_PreviewKeyDown"
              HorizontalAlignment="Stretch"/>
-
-            <Popup x:Name="ResultsPopup"
-               PlacementTarget="{Binding ElementName=SearchTextBox}"
-               Placement="Bottom"
-               IsOpen="{Binding Search.IsPopupOpen}"
-               StaysOpen="False" Grid.Row="1">
-                <ListBox x:Name="ResultsListBox"
-                     ItemsSource="{Binding Search.FilteredItems}"
-                     SelectedItem="{Binding Search.SelectedItem}"
-                     MouseDoubleClick="ResultsListBox_MouseDoubleClick"
-                     MaxHeight="200"
-                     MinWidth="{Binding ActualWidth, ElementName=SearchTextBox}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding ResultText}" Padding="5"/>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Popup>
         </Grid>
         <TreeView x:Name="treeExplorer" 
-                  Grid.Row="1" 
+                  Grid.Row="2" 
                   Grid.RowSpan="3" 
                   Grid.ColumnSpan="2" 
                   ItemsSource="{Binding Project.Items}" 
@@ -68,6 +49,7 @@
                 <Style TargetType="{x:Type TreeViewItem}">
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
                     <Setter Property="IsSelected" Value="{Binding IsFocused, Mode=TwoWay}" />
+                    <Setter Property="IsEnabled" Value="{Binding IsEnabled, Mode=TwoWay}" />
                     <Style.Triggers>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter Property="Background" Value="LightBlue" />
@@ -100,11 +82,11 @@
                             FontFamily="Consolas"
             FontSize="10pt"
             ShowLineNumbers="True"
-            SyntaxHighlighting="Markdown"></avalon:TextEditor>
+            SyntaxHighlighting="Markdown" Grid.RowSpan="2"></avalon:TextEditor>
         <TextBox 
             x:Name="txtMessage" 
             Grid.Column="2" 
-            Grid.Row="2" 
+            Grid.Row="3" 
             TextWrapping="Wrap"
             AllowDrop="True"
             Drop="TextBox_Drop"
@@ -112,8 +94,8 @@
             AcceptsTab="True" 
             AcceptsReturn="True" 
             />
-        <Button x:Name="btnCopy" Grid.Column="2" Content="Копировать" Grid.Row="3" Click="BuildPrompt"/>
-        <Grid Grid.Column="2" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        <Button x:Name="btnCopy" Grid.Column="2" Content="Копировать" Grid.Row="4" Click="BuildPrompt"/>
+        <Grid Grid.Column="2" Grid.Row="3" HorizontalAlignment="Right" VerticalAlignment="Bottom">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>

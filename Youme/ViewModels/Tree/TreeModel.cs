@@ -43,8 +43,9 @@ namespace Youme.ViewModels.Tree
         {
             Items.Clear();
             _serviceDir = Path.Combine(Program.Storage.ProjectFolder, Youme.Services.StorageService.LocalConfigFolder);
-            var rootItem = CreateTreeItem(new DirectoryInfo(rootPath));
+            var rootItem = CreateTreeItem(null, new DirectoryInfo(rootPath));
             Items.Add(rootItem);
+            OnPropertyChanged();
         }
 
         private string _serviceDir;
@@ -54,15 +55,16 @@ namespace Youme.ViewModels.Tree
         /// </summary>
         /// <param name="info"></param>
         /// <returns></returns>
-        private TreeElement CreateTreeItem(FileSystemInfo info)
+        private TreeElement CreateTreeItem(TreeElement? parent, FileSystemInfo info)
         {
             var item = new TreeElement
             {
                 Name = info.Name,
                 FullPath = info.FullName,
-                Text = ContentBuilder.ShouldInclude(info.FullName) ? ContentBuilder.ParseFile(info.FullName) : string.Empty,
                 Type = info is DirectoryInfo ? ItemType.Folder : ItemType.File,
-                Children = new ObservableCollection<TreeElement>()
+                Text = info is DirectoryInfo ? string.Empty : ContentBuilder.ShouldInclude(info.FullName) ? ContentBuilder.ParseFile(info.FullName) : string.Empty,
+                Children = [],
+                Parent = parent
             };
             AllItems.Add(item);
 
@@ -76,7 +78,7 @@ namespace Youme.ViewModels.Tree
                             continue;
                         if ((dir.Attributes & FileAttributes.Hidden) == 0)
                         {
-                            var child = CreateTreeItem(dir);
+                            var child = CreateTreeItem(item, dir);
                             item.Children.Add(child);
                         }
                     }
@@ -85,7 +87,7 @@ namespace Youme.ViewModels.Tree
                     {
                         if ((file.Attributes & FileAttributes.Hidden) == 0)
                         {
-                            var child = CreateTreeItem(file);
+                            var child = CreateTreeItem(item, file);
                             item.Children.Add(child);
                         }
                     }

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Youme.ViewModels.Tree;
+﻿using Youme.ViewModels.Tree;
 
 namespace Youme.ViewModels
 {
@@ -9,17 +8,11 @@ namespace Youme.ViewModels
         public MainVM(MainWindow window) 
         {
             this.view = window;
+            Search.Tree = Project;
         }
 
         public TreeModel Project { get; set; } = new TreeModel();
-        public SearchVM<TreeElement> Search { get; set; } = new SearchVM<TreeElement>(checkText: (item) => item.Text, displayText: (item) => item.FullPath, OpenFile);
-       
-
-
-        private static void OpenFile(TreeElement item)
-        {
-            Debug.WriteLine(item.FullPath);
-        }
-
+        public TreeSearch Search { get; set; } = new TreeSearch(checkText: (item) => item.Text, displayText: (item) => item.FullPath);
+    
     }
 }
