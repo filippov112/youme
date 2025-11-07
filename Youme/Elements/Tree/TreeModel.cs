@@ -10,6 +10,7 @@ namespace Youme.Elements.Tree
         public ObservableCollection<TreeElement> AllItems { get; set; } = [];
         private ObservableCollection<TreeElement> _items = [];
         private TreeElement? _selectedItem;
+        private bool skip_all_messagess = false;
 
         public ObservableCollection<TreeElement> Items
         {
@@ -29,6 +30,7 @@ namespace Youme.Elements.Tree
         // Загрузка структуры проекта из файловой системы
         public void LoadProject(string rootPath)
         {
+            skip_all_messagess = false;
             AllItems.Clear();
             Items.Clear();
             _serviceDir = Path.Combine(Program.Storage.ProjectFolder, StorageService.LocalConfigFolder);
@@ -81,8 +83,14 @@ namespace Youme.Elements.Tree
                         }
                     }
                 }
-                catch (UnauthorizedAccessException)
-                {}
+                catch (Exception e)
+                {
+                    if (!skip_all_messagess)
+                    {
+                        if (MessageBox.Show(e.Message, "Внимание!", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error) == DialogResult.Ignore)
+                            skip_all_messagess = true;
+                    }
+                }
             }
 
             return item;
