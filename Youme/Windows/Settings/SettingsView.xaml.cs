@@ -11,17 +11,16 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Youme.ViewModels;
 
-namespace Youme.Views
+namespace Youme.Windows.Settings
 {
     /// <summary>
     /// Логика взаимодействия для Settings.xaml
     /// </summary>
-    public partial class Settings : Window
+    public partial class SettingsView : Window
     {
         private SettingsVM vm;
-        public Settings()
+        public SettingsView()
         {
             InitializeComponent();
             vm = new SettingsVM(this);

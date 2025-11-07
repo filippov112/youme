@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Youme.ViewModels
+namespace Youme.Other
 {
     public class ViewModel : INotifyPropertyChanged
     {

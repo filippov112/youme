@@ -1,7 +1,7 @@
 ﻿using System.Windows;
-using Youme.ViewModels.Tree;
+using Youme.Other;
 
-namespace Youme.ViewModels
+namespace Youme.Elements.Tree
 {
     public class TreeSearch : ViewModel
     {

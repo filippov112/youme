@@ -1,7 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
+using Youme.Other;
 
-namespace Youme.ViewModels.Tree
+namespace Youme.Elements.Tree
 {
     // Базовый класс для элементов дерева
     public class TreeElement : ViewModel
@@ -48,7 +49,6 @@ namespace Youme.ViewModels.Tree
                 OnPropertyChanged();
             }
         }
-
         public bool IsEnabled  // Элемент соответствует фильтру поиска
         {
             get => _isEnabled;

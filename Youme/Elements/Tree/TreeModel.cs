@@ -1,8 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
+using Youme.Other;
 using Youme.Services;
 
-namespace Youme.ViewModels.Tree
+namespace Youme.Elements.Tree
 {
     public class TreeModel : ViewModel
     {
@@ -20,19 +21,6 @@ namespace Youme.ViewModels.Tree
             }
         }
 
-        public TreeElement? SelectedItem
-        {
-            get => _selectedItem;
-            set
-            {
-                _selectedItem = value;
-                OnPropertyChanged();
-                OnItemSelected?.Invoke(value);
-            }
-        }
-
-        public Action<TreeElement?>? OnItemSelected { get; set; }
-
         public TreeModel()
         {
             Items = new ObservableCollection<TreeElement>();
@@ -41,8 +29,9 @@ namespace Youme.ViewModels.Tree
         // Загрузка структуры проекта из файловой системы
         public void LoadProject(string rootPath)
         {
+            AllItems.Clear();
             Items.Clear();
-            _serviceDir = Path.Combine(Program.Storage.ProjectFolder, Youme.Services.StorageService.LocalConfigFolder);
+            _serviceDir = Path.Combine(Program.Storage.ProjectFolder, StorageService.LocalConfigFolder);
             var rootItem = CreateTreeItem(null, new DirectoryInfo(rootPath));
             Items.Add(rootItem);
             OnPropertyChanged();

@@ -1,13 +1,13 @@
 ﻿using Youme.Model;
+using Youme.Other;
 using Youme.Services;
-using Youme.Views;
 
-namespace Youme.ViewModels
+namespace Youme.Windows.Settings
 {
     public class SettingsVM:ViewModel
     {
-        private Settings? view;
-        public SettingsVM(Settings view)
+        private SettingsView? view;
+        public SettingsVM(SettingsView view)
         {
             this.view = view;
             GlobalConfig = Program.Storage.GConfig.Copy();

@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace Youme.ViewModels
+namespace Youme.Other
 {
     public class RelayCommand : ICommand
     {

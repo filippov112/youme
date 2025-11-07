@@ -1,15 +1,16 @@
 ﻿using System.IO;
 using System.Windows.Forms;
-using Youme.ViewModels.Tree;
+using Youme.Elements.Tree;
+using Youme.Other;
 
-namespace Youme.ViewModels
+namespace Youme.Windows.Project
 {
-    public class MainVM: ViewModel
+    public class ProjectVM: ViewModel
     {
-        private MainWindow view;
-        public MainVM(MainWindow window) 
+        private ProjectView view;
+        public ProjectVM(ProjectView window) 
         {
-            this.view = window;
+            view = window;
             Search.Tree = Project;
         }
 

@@ -5,10 +5,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Youme.Elements.Tree;
 using Youme.Services;
-using Youme.ViewModels;
-using Youme.ViewModels.Tree;
-using Youme.Views;
+using Youme.Windows.Project;
+using Youme.Windows.Settings;
 using Clipboard = System.Windows.Clipboard;
 using DataFormats = System.Windows.DataFormats;
 using DataObject = System.Windows.DataObject;
@@ -17,18 +17,25 @@ using DragEventArgs = System.Windows.DragEventArgs;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using Point = System.Windows.Point;
 
-namespace Youme
+
+namespace Youme.Windows.Project
 {
-    public partial class MainWindow : Window
+    public partial class ProjectView : Window
     {
-        private MainVM vm;
-        public MainWindow()
+        private ProjectVM vm;
+        public ProjectView()
         {
             InitializeComponent();
-            vm = new MainVM(this);
+            vm = new ProjectVM(this);
             DataContext = vm;
         }
 
+
+        /// <summary>
+        /// Открытие проекта
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OpenProject(object sender, RoutedEventArgs e)
         {
             using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
@@ -38,21 +45,34 @@ namespace Youme
 
                 if (folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
+                    editorAvalon.Clear();
+                    txtMessage.Text = string.Empty;
                     Program.Storage.ProjectFolder = folderDialog.SelectedPath;
                     vm.Project.LoadProject(folderDialog.SelectedPath);
                 }
             }
         }
 
+        /// <summary>
+        /// Открытие окна настроек
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OpenSettings(object sender, RoutedEventArgs e)
         {
-            var settings = new Settings();
+            var settings = new SettingsView();
             settings.ShowDialog();
         }
 
+
+        /// <summary>
+        /// Запуск процесса сборки промпта
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BuildPrompt(object sender, RoutedEventArgs e)
         {
-            var content = ContentBuilder.Build(vm.Project.AllItems.Where(x => x.IsSelected && x.Type == ViewModels.Tree.ItemType.File).Select(x => x.FullPath).ToList());
+            var content = ContentBuilder.Build(vm.Project.AllItems.Where(x => x.IsSelected && x.Type == ItemType.File).Select(x => x.FullPath).ToList());
             string prompt = Program.Storage.GetPrompt(content, txtMessage.Text);
 
             // Для GPT-3.5 и GPT-4
@@ -72,6 +92,7 @@ namespace Youme
         {
             editorAvalon.Text = content;
         }
+
         /// <summary>
         /// Транслирует выбор элемента в TreeView в открытие документа в редакторе
         /// </summary>
@@ -123,13 +144,23 @@ namespace Youme
         }
 
         #region Drag-drop tree elements
-        private Point _startPoint;
-        private bool _isDragging = false;
+        private Point _startPoint; // Точка начала перемещения
+        private bool _isDragging = false; // Процесс перемещения
+        /// <summary>
+        /// Захват элемента дерева для перетаскивания в промпт
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TreeView_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             _startPoint = e.GetPosition(null);
         }
 
+        /// <summary>
+        /// Перетаскивание элемента дерева в промпт
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TreeView_MouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -145,12 +176,14 @@ namespace Youme
                     if (treeViewItem != null)
                     {
                         TreeElement item = (TreeElement)treeViewItem.DataContext;
+
+                        // Формируем текстовые данные для перемещения
                         DataObject data = new DataObject(DataFormats.Text, Path.GetRelativePath(Program.Storage.ProjectFolder, item.FullPath));
                         
                         if (!_isDragging)
                         {
                             _isDragging = true;
-                            DragDrop.DoDragDrop(treeViewItem, data, DragDropEffects.Copy);
+                            DragDrop.DoDragDrop(treeViewItem, data, DragDropEffects.Copy); // Перемещение выполняется до момента отпуска кнопки мыши
                             _isDragging = false;
                         }
                     }
@@ -158,6 +191,12 @@ namespace Youme
             }
         }
 
+        /// <summary>
+        /// Поиск нужного типа элемента в дереве события
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="current"></param>
+        /// <returns></returns>
         private static T FindAncestor<T>(DependencyObject current) where T : DependencyObject
         {
             do
@@ -170,6 +209,11 @@ namespace Youme
             return null;
         }
 
+        /// <summary>
+        /// Обработчик сброса элемента дерева в текстовое поле промпта
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TextBox_Drop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent("FilePath"))
