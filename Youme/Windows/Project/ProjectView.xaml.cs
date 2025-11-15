@@ -26,7 +26,7 @@ namespace Youme.Windows.Project
         public ProjectView()
         {
             InitializeComponent();
-            vm = new ProjectVM(this);
+            vm = new ProjectVM(this, Dispatcher);
             DataContext = vm;
         }
 
@@ -48,7 +48,7 @@ namespace Youme.Windows.Project
                     editorAvalon.Clear();
                     txtMessage.Text = string.Empty;
                     Program.Storage.ProjectFolder = folderDialog.SelectedPath;
-                    vm.Project.LoadProject(folderDialog.SelectedPath);
+                    vm.Project?.Refresh();
                 }
             }
         }

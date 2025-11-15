@@ -5,8 +5,8 @@ namespace Youme.Elements.Tree
 {
     public class TreeSearch : ViewModel
     {
-        private TreeModel _tree = new();
-        public TreeModel Tree
+        private TreeModel? _tree;
+        public TreeModel? Tree
         {
             get => _tree;
             set
@@ -47,6 +47,8 @@ namespace Youme.Elements.Tree
         /// </summary>
         protected virtual void FilterItems()
         {
+            if (_tree == null)
+                return;
             if (!string.IsNullOrWhiteSpace(SearchText))
             {
                 foreach(var item in _tree.AllItems)

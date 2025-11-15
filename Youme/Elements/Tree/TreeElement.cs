@@ -1,6 +1,8 @@
 ﻿using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using Youme.Other;
+using Youme.Services;
 
 namespace Youme.Elements.Tree
 {
@@ -12,12 +14,13 @@ namespace Youme.Elements.Tree
         private bool _isFocused;
         private bool _isEnabled = true;
 
+        public ItemType Type { get; set; }
         public string Name { get; set; } = string.Empty;
         public string FullPath { get; set; } = string.Empty;
-        public string Text { get; set; } = string.Empty;
+        public string Text() => Type == ItemType.Folder ? string.Empty : ContentBuilder.ShouldInclude(FullPath) ? ContentBuilder.ParseFile(FullPath) : string.Empty;
         public TreeElement? Parent { get; set; } = null;
 
-        public ItemType Type { get; set; }
+        
         public ObservableCollection<TreeElement> Children { get; set; } = [];
 
         public bool IsExpanded // Каталог раскрыт

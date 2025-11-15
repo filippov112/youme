@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
+using System.Windows.Threading;
 using Youme.Other;
 using Youme.Services;
 
@@ -7,10 +8,83 @@ namespace Youme.Elements.Tree
 {
     public class TreeModel : ViewModel
     {
+        public TreeModel(Dispatcher uiDispatcher)
+        {
+            _uiDispatcher = uiDispatcher;
+            Items = new ObservableCollection<TreeElement>();
+        }
         public ObservableCollection<TreeElement> AllItems { get; set; } = [];
         private ObservableCollection<TreeElement> _items = [];
         private TreeElement? _selectedItem;
         private bool skip_all_messagess = false;
+        private FileSystemWatcher? _watcher = null;
+        private string _watcher_path = string.Empty;
+        private Dispatcher? _uiDispatcher = null;
+                          
+
+        private List<string> _expandedPaths = new List<string>();
+        private List<string> _selectedPaths = new List<string>();
+
+        private void SaveTreeState()
+        {
+            _expandedPaths.Clear();
+            _selectedPaths.Clear();
+            foreach (var item in AllItems)
+            {
+                if (item.IsExpanded)
+                    _expandedPaths.Add(item.FullPath);
+                if (item.IsSelected)
+                    _selectedPaths.Add(item.FullPath);
+            }
+        }
+
+        private void RestoreTreeState()
+        {
+            foreach (var item in AllItems)
+            {
+                item.IsExpanded = _expandedPaths.Contains(item.FullPath);
+                item.IsSelected = _selectedPaths.Contains(item.FullPath);
+            }
+        }
+
+        /// <summary>
+        /// Обновление структуры проекта
+        /// </summary>
+        public void Refresh()
+        {
+            StartWatching(Program.Storage.ProjectFolder);
+            LoadProject(Program.Storage.ProjectFolder);
+        }
+        /// <summary>
+        /// Синхронизация изменений в файловой системе
+        /// </summary>
+        /// <param name="path"></param>
+        private void StartWatching(string path)
+        {
+            if (_watcher_path == path)
+                return;
+            else
+            {
+                _watcher_path = path;
+                if (_watcher != null)
+                {
+                    _watcher.EnableRaisingEvents = false;
+                    _watcher.Created -= OnFileChanged;
+                    _watcher.Deleted -= OnFileChanged;
+                    _watcher.Renamed -= OnFileRenamed;
+                    _watcher.Dispose();
+                }
+                _watcher = new FileSystemWatcher(path);
+                _watcher.IncludeSubdirectories = true;
+                _watcher.Created += OnFileChanged;
+                _watcher.Deleted += OnFileChanged;
+                _watcher.Renamed += OnFileRenamed;
+                _watcher.EnableRaisingEvents = true;
+            }
+        }
+
+        private void OnFileChanged(object sender, FileSystemEventArgs e) => _uiDispatcher?.Invoke(Refresh);
+        private void OnFileRenamed(object sender, RenamedEventArgs e) => _uiDispatcher?.Invoke(Refresh);
 
         public ObservableCollection<TreeElement> Items
         {
@@ -22,24 +96,29 @@ namespace Youme.Elements.Tree
             }
         }
 
-        public TreeModel()
-        {
-            Items = new ObservableCollection<TreeElement>();
-        }
-
-        // Загрузка структуры проекта из файловой системы
+        /// <summary>
+        /// Загрузка структуры проекта из файловой системы
+        /// </summary>
+        /// <param name="rootPath"></param>
         public void LoadProject(string rootPath)
         {
+            if (rootPath == string.Empty || !Directory.Exists(rootPath))
+                return;
+            SaveTreeState();
             skip_all_messagess = false;
             AllItems.Clear();
             Items.Clear();
-            _serviceDir = Path.Combine(Program.Storage.ProjectFolder, StorageService.LocalConfigFolder);
+            
             var rootItem = CreateTreeItem(null, new DirectoryInfo(rootPath));
             Items.Add(rootItem);
+            RestoreTreeState();
             OnPropertyChanged();
         }
 
-        private string _serviceDir;
+        /// <summary>
+        /// Служебный каталог, который не нужно отображать в дереве
+        /// </summary>
+        private string _serviceDir => Path.Combine(Program.Storage.ProjectFolder, StorageService.LocalConfigFolder);
 
         /// <summary>
         /// Рекурсивный перебор проекта
@@ -53,7 +132,6 @@ namespace Youme.Elements.Tree
                 Name = info.Name,
                 FullPath = info.FullName,
                 Type = info is DirectoryInfo ? ItemType.Folder : ItemType.File,
-                Text = info is DirectoryInfo ? string.Empty : ContentBuilder.ShouldInclude(info.FullName) ? ContentBuilder.ParseFile(info.FullName) : string.Empty,
                 Children = [],
                 Parent = parent
             };
