@@ -15,6 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Resources\icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
     <PackageReference Include="SharpToken" Version="2.0.4" />
     <PackageReference Include="Ude.NetStandard" Version="1.2.0" />
@@ -27,6 +31,7 @@
 
     <PropertyGroup>
 	    <StartupObject>Youme.Program</StartupObject>
+	    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
     </PropertyGroup>
 
 </Project>
