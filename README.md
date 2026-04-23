@@ -1,6 +1,6 @@
 # <center>**Schiza**</center>
 
-<center><image src="Docs/icon.png" width="200px"/></center>
+<center><image src="assets/icon.png" width="200px"/></center>
 
 > A tool for working on projects in tandem with neural network assistants.
 
@@ -17,9 +17,9 @@ The following features are currently implemented:
 ---
 ## 🖼 Screenshots
 
-![](Docs/Screen_0.png)
+![](assets/Screen_0.png)
 
-![](Docs/Screen_1.png)
+![](assets/Screen_1.png)
 
 ---
 ## ⚙️ Technical info
