@@ -1,10 +1,11 @@
+using Application.Services;
 using System.IO;
 using System.Text;
 using Ude;
 
-namespace Presentation.Services;
+namespace Infrastructure.Services;
 
-public static class ContentBuilder
+public class ContentBuilder(IDialogService dialogService, IStorageService storageService): IContentBuilder
 {
     /// <summary>
     /// Формирует контекст проекта
@@ -13,7 +14,7 @@ public static class ContentBuilder
     /// <param name="extensions"></param>
     /// <param name="structure"></param>
     /// <returns></returns>
-    public static string Build(List<string> files)
+    public string Build(List<string> files)
     {
         var sb = new StringBuilder();
 
@@ -30,10 +31,10 @@ public static class ContentBuilder
     /// </summary>
     /// <param name="sb">Текст содержимого всех файлов (StringBuilder)</param>
     /// <param name="fullPath">Абсолютный путь к файлу</param>
-    private static void AppendFileContent(StringBuilder sb, string fullPath)
+    private void AppendFileContent(StringBuilder sb, string fullPath)
     {
-        string relativePath = Path.GetRelativePath(Program.Storage.ProjectFolder, fullPath);
-        Program.Storage.AddFile(sb, relativePath, ParseFile(fullPath));
+        string relativePath = Path.GetRelativePath(storageService.ProjectFolder, fullPath);
+        storageService.AddFile(sb, relativePath, ParseFile(fullPath));
     }
 
     /// <summary>
@@ -41,7 +42,7 @@ public static class ContentBuilder
     /// </summary>
     /// <param name="fullpath">Абсолютный путь к файлу</param>
     /// <returns>Разрешение на парсинг</returns>
-    public static bool ShouldInclude(string fullpath)
+    public bool ShouldInclude(string fullpath)
     {
         try
         {
@@ -70,7 +71,7 @@ public static class ContentBuilder
     /// </summary>
     /// <param name="fullpath">Путь к файлу</param>
     /// <returns>Содержимое файла</returns>
-    public static string ParseFile(string fullpath)
+    public string ParseFile(string fullpath)
     {
         try
         {
@@ -80,7 +81,7 @@ public static class ContentBuilder
             if (fs.Length >= 3)
             {
                 byte[] bom = new byte[4];
-                fs.Read(bom, 0, 4);
+                fs.ReadExactly(bom, 0, 4);
                 fs.Position = 0;
 
                 if (bom[0] == 0xEF && bom[1] == 0xBB && bom[2] == 0xBF)
@@ -110,7 +111,7 @@ public static class ContentBuilder
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Ошибка определения кодировки: {ex.Message}");
+            dialogService.ShowError($"Ошибка определения кодировки: {ex.Message}");
             throw;
         }
     }

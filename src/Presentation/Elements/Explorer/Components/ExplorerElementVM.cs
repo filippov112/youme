@@ -1,12 +1,12 @@
-﻿using Presentation.Other;
-using Presentation.Services;
+﻿using Application.Services;
+using Presentation.Other;
 using System.Collections.ObjectModel;
 using System.IO;
 
 namespace Presentation.Elements.Explorer.Components
 {
     // Базовый класс для элементов дерева
-    public class ExplorerElementVM : ViewModel
+    public class ExplorerElementVM(IContentBuilder contentBuilder) : ViewModel
     {
         private bool _isExpanded;
         private bool _isSelected;
@@ -16,7 +16,7 @@ namespace Presentation.Elements.Explorer.Components
         public ItemType Type { get; set; }
         public string Name { get; set; } = string.Empty;
         public string FullPath { get; set; } = string.Empty;
-        public string Text() => Type == ItemType.Folder ? string.Empty : ContentBuilder.ShouldInclude(FullPath) ? ContentBuilder.ParseFile(FullPath) : string.Empty;
+        public string Text() => Type == ItemType.Folder ? string.Empty : contentBuilder.ShouldInclude(FullPath) ? contentBuilder.ParseFile(FullPath) : string.Empty;
         public ExplorerElementVM? Parent { get; set; } = null;
 
 

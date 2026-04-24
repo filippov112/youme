@@ -1,4 +1,5 @@
-﻿using ICSharpCode.AvalonEdit.Highlighting;
+﻿using Application.Services;
+using ICSharpCode.AvalonEdit.Highlighting;
 using Presentation.Elements.Explorer.Components;
 using System.IO;
 using System.Windows;
@@ -8,11 +9,11 @@ namespace Presentation.Windows.Project
 {
     public partial class ProjectView : Window
     {
-        private ProjectVM vm;
-        public ProjectView()
+        private readonly ProjectVM vm;
+        public ProjectView(IDialogService dialogService, IContentBuilder contentBuilder, IStorageService storageService)
         {
             InitializeComponent();
-            vm = new ProjectVM(this, Dispatcher);
+            vm = new ProjectVM(this, Dispatcher, dialogService, contentBuilder, storageService);
             DataContext = vm;
         }
 
@@ -71,7 +72,7 @@ namespace Presentation.Windows.Project
         {
             if (e.Data.GetDataPresent("FilePath"))
             {
-                string filePath = e.Data.GetData("FilePath") as string;
+                string? filePath = e.Data.GetData("FilePath") as string;
                 txtMessage.Text = filePath;
                 e.Handled = true;
             }

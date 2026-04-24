@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using Application.Services;
+using Infrastructure.Services;
+using System.Windows;
 
 namespace Presentation.Windows.Settings
 {
@@ -7,13 +9,15 @@ namespace Presentation.Windows.Settings
     /// </summary>
     public partial class SettingsView : Window
     {
-        private SettingsVM vm;
-        public SettingsView()
+        private readonly SettingsVM vm;
+        private readonly IStorageService _storageService;
+        public SettingsView(IStorageService storageService)
         {
+            _storageService = storageService;
             InitializeComponent();
-            vm = new SettingsVM(this);
+            vm = new SettingsVM(storageService);
             DataContext = vm;
-            btnProjectSettings.IsEnabled = !string.IsNullOrEmpty(Program.Storage.ProjectFolder);
+            btnProjectSettings.IsEnabled = !string.IsNullOrEmpty(storageService.ProjectFolder);
         }
 
         private void DeactivateAllPanels()
@@ -36,7 +40,7 @@ namespace Presentation.Windows.Settings
 
         private void SaveSettings(object sender, RoutedEventArgs e)
         {
-            Program.Storage.SaveSettings(vm.GlobalConfig, vm.LocalConfig);
+            _storageService.SaveSettings(vm.GlobalConfig, vm.LocalConfig);
             vm.BtnSaveIsActive = false;
         }
     }

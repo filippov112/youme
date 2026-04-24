@@ -1,7 +1,7 @@
-﻿using Presentation.Elements.Explorer;
+﻿using Application.Services;
+using Presentation.Elements.Explorer;
 using Presentation.Elements.Explorer.Components;
 using Presentation.Other;
-using Presentation.Services;
 using Presentation.Windows.Settings;
 using SharpToken;
 using System.IO;
@@ -16,12 +16,15 @@ namespace Presentation.Windows.Project
     {
         private ProjectView view;
         private readonly Dispatcher uiDispatcher;
-
-        public ProjectVM(ProjectView window, Dispatcher uiDispatcher)
+        private readonly IContentBuilder _contentBuilder;
+        private readonly IStorageService _storageService;
+        public ProjectVM(ProjectView window, Dispatcher uiDispatcher, IDialogService dialogService, IContentBuilder contentBuilder, IStorageService storageService)
         {
+            _storageService = storageService;
+            _contentBuilder = contentBuilder;
             view = window;
             this.uiDispatcher = uiDispatcher;
-            Explorer = new ExplorerVM(view.explorerControl, uiDispatcher);
+            Explorer = new ExplorerVM(uiDispatcher, dialogService, contentBuilder, storageService);
 
             OpenProjectCommand = new RelayCommand(OpenProject);
             OpenSettingsCommand = new RelayCommand(OpenSettings);
@@ -57,7 +60,7 @@ namespace Presentation.Windows.Project
                 {
                     view.editorAvalon.Clear();
                     view.txtMessage.Text = string.Empty;
-                    Program.Storage.ProjectFolder = folderDialog.SelectedPath;
+                    _storageService.ProjectFolder = folderDialog.SelectedPath;
                     Explorer.Refresh();
                 }
             }
@@ -69,7 +72,7 @@ namespace Presentation.Windows.Project
 
         private void OpenSettings(object? e)
         {
-            var settings = new SettingsView();
+            var settings = new SettingsView(_storageService);
             settings.ShowDialog();
         }
 
@@ -80,8 +83,8 @@ namespace Presentation.Windows.Project
                 .Select(x => x.FullPath)
                 .ToList();
 
-            var content = ContentBuilder.Build(selectedFiles);
-            string prompt = Program.Storage.GetPrompt(content, view.txtMessage.Text);
+            var content = _contentBuilder.Build(selectedFiles);
+            string prompt = _storageService.GetPrompt(content, view.txtMessage.Text);
 
             var encoding = GptEncoding.GetEncoding("cl100k_base");
             var tokens = encoding.Encode(prompt);

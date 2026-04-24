@@ -5,8 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avalon="http://icsharpcode.net/sharpdevelop/avalonedit"
         xmlns:explorer="clr-namespace:Presentation.Elements.Explorer" 
-        xmlns:project="clr-namespace:Presentation.Windows.Project" 
-        d:DataContext="{d:DesignInstance Type=project:ProjectVM}"
+        xmlns:project="clr-namespace:Presentation.Windows.Project"
         xmlns:ad="https://github.com/Dirkster99/AvalonDock"
         mc:Ignorable="d"
         Title="Schiza"
@@ -88,7 +87,7 @@
                                     <Button x:Name="btnCopy"
                                         Content="Копировать"
                                         Command="{Binding BuildPromptCommand}"
-                                        Background="#FF4768FF" HorizontalAlignment="Right" VerticalAlignment="Bottom" Padding="15,5,15,5" Margin="0,0,10,10" Height="28" Width="97"/>
+                                        Background="#FF4768FF" HorizontalAlignment="Right" VerticalAlignment="Bottom" Padding="15,5,15,5" Margin="0,0,10,10" Height="28" Width="97" Foreground="White"/>
                                     <Grid
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Bottom" Margin="10,0,0,10">

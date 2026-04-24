@@ -1,20 +1,13 @@
-﻿using Presentation.Model;
+﻿using Application.Models;
+using Application.Services;
 using Presentation.Other;
 
 namespace Presentation.Windows.Settings
 {
-    public class SettingsVM : ViewModel
+    public class SettingsVM(IStorageService storageService) : ViewModel
     {
-        private SettingsView? view;
-        public SettingsVM(SettingsView view)
-        {
-            this.view = view;
-            GlobalConfig = Program.Storage.GConfig.Copy();
-            LocalConfig = Program.Storage.LConfig.Copy();
-        }
-
-        public GlobalConfig GlobalConfig { get; private set; }
-        public LocalConfig LocalConfig { get; private set; }
+        public GlobalConfig GlobalConfig { get; private set; } = storageService.GConfig.Copy();
+        public LocalConfig LocalConfig { get; private set; } = storageService.LConfig.Copy();
 
         public string InputProjectPrompt
         {

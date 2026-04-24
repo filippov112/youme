@@ -1,4 +1,6 @@
-﻿using Presentation;
+﻿using Application.Services;
+using Infrastructure.Services;
+using Presentation;
 using Presentation.Elements.Explorer;
 using Presentation.Elements.Explorer.Components;
 using System.IO;
@@ -25,7 +27,6 @@ namespace Presentation.Elements.Explorer
         private Point _startPoint; // Точка начала перемещения
         private ExplorerElementVM? _draggedItem; // Элемент, который перетаскивается
         private TreeViewItem? _visualDropTarget; // Для визуального выделения
-
         public ExplorerControl()
         {
             InitializeComponent();
@@ -115,11 +116,7 @@ namespace Presentation.Elements.Explorer
                 {
                     if (_draggedItem != null)
                     {
-                        // Формируем данные для перетаскивания
-                        DataObject data = new DataObject("ExplorerElementVM", _draggedItem);
-                        // Дополнительно можно передать текстовое представление
-                        data.SetData(DataFormats.Text, Path.GetRelativePath(Program.Storage.ProjectFolder, _draggedItem.FullPath));
-
+                        var data = ((ExplorerVM)DataContext).Move(_draggedItem);
                         // Инициируем операцию Drag & Drop
                         DragDrop.DoDragDrop(treeExplorer, data, DragDropEffects.Move);
                     }
@@ -205,7 +202,7 @@ namespace Presentation.Elements.Explorer
                             if (targetItem != null) // targetItem - это элемент, над которым курсор, но выделяем destinationFolder
                             {
                                 // Если сброс на файл, выделяем родительский элемент
-                                TreeViewItem visualItemToHighlight = targetItem;
+                                TreeViewItem? visualItemToHighlight = targetItem;
                                 if (targetVM.Type == ItemType.File && targetVM.Parent != null)
                                 {
                                     // Попробуем найти TreeViewItem для родителя

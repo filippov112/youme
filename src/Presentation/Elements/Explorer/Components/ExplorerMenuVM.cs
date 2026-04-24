@@ -1,4 +1,5 @@
-﻿using Presentation.Other;
+﻿using Application.Services;
+using Presentation.Other;
 using System.IO;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -10,11 +11,13 @@ namespace Presentation.Elements.Explorer.Components
     {
         private readonly ExplorerTreeVM _project;
         private readonly Dispatcher _uiDispatcher;
+        private readonly IDialogService _dialogService;
 
-        public ExplorerMenuVM(ExplorerTreeVM project, Dispatcher uiDispatcher)
+        public ExplorerMenuVM(ExplorerTreeVM project, Dispatcher uiDispatcher, IDialogService dialogService)
         {
             _project = project;
             _uiDispatcher = uiDispatcher;
+            _dialogService = dialogService;
 
             CreateFileCommand = new RelayCommand<ExplorerElementVM>(CreateFile);
             CreateFolderCommand = new RelayCommand<ExplorerElementVM>(CreateFolder);
@@ -43,7 +46,7 @@ namespace Presentation.Elements.Explorer.Components
 
             if (targetParent?.Type != ItemType.Folder)
             {
-                MessageBox.Show("Не удалось определить каталог для создания файла.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _dialogService.ShowWarning("Не удалось определить каталог для создания файла.");
                 return;
             }
 
@@ -53,7 +56,7 @@ namespace Presentation.Elements.Explorer.Components
             var fullPath = Path.Combine(targetParent.FullPath, fileName);
             if (File.Exists(fullPath) || Directory.Exists(fullPath))
             {
-                MessageBox.Show("Файл или каталог с таким именем уже существует.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _dialogService.ShowWarning("Файл или каталог с таким именем уже существует.");
                 return;
             }
 
@@ -63,7 +66,7 @@ namespace Presentation.Elements.Explorer.Components
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при создании файла: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _dialogService.ShowError($"Ошибка при создании файла: {ex.Message}");
             }
         }
 
@@ -80,7 +83,7 @@ namespace Presentation.Elements.Explorer.Components
 
             if (targetParent?.Type != ItemType.Folder)
             {
-                MessageBox.Show("Не удалось определить каталог для создания папки.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _dialogService.ShowWarning("Не удалось определить каталог для создания папки.");
                 return;
             }
 
@@ -90,7 +93,7 @@ namespace Presentation.Elements.Explorer.Components
             var fullPath = Path.Combine(targetParent.FullPath, folderName);
             if (File.Exists(fullPath) || Directory.Exists(fullPath))
             {
-                MessageBox.Show("Файл или каталог с таким именем уже существует.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _dialogService.ShowWarning("Файл или каталог с таким именем уже существует.");
                 return;
             }
 
@@ -100,7 +103,7 @@ namespace Presentation.Elements.Explorer.Components
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при создании каталога: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _dialogService.ShowError($"Ошибка при создании каталога: {ex.Message}");
             }
         }
 
@@ -111,8 +114,8 @@ namespace Presentation.Elements.Explorer.Components
             var confirmMessage = item.Type == ItemType.Folder
                 ? $"Удалить каталог '{item.Name}' и всё его содержимое?"
                 : $"Удалить файл '{item.Name}'?";
-            var result = MessageBox.Show(confirmMessage, "Подтверждение удаления", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-            if (result != DialogResult.Yes) return;
+            if (!_dialogService.ShowYesNoDialog(confirmMessage, "Подтверждение удаления")) 
+                return;
 
             try
             {
@@ -127,7 +130,7 @@ namespace Presentation.Elements.Explorer.Components
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при удалении: {ex.Message}");
+                _dialogService.ShowError($"Ошибка при удалении: {ex.Message}");
             }
         }
 
@@ -161,7 +164,7 @@ namespace Presentation.Elements.Explorer.Components
             var newFullPath = Path.Combine(Path.GetDirectoryName(item.FullPath) ?? ".", newName);
             if (File.Exists(newFullPath) || Directory.Exists(newFullPath))
             {
-                MessageBox.Show("Файл или каталог с таким именем уже существует.");
+                _dialogService.ShowError("Файл или каталог с таким именем уже существует.");
                 return;
             }
 
@@ -178,7 +181,7 @@ namespace Presentation.Elements.Explorer.Components
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при переименовании: {ex.Message}");
+                _dialogService.ShowError($"Ошибка при переименовании: {ex.Message}");
             }
         }
     }

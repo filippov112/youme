@@ -1,5 +1,6 @@
-﻿using Presentation.Other;
-using Presentation.Services;
+﻿using Application.Constants;
+using Application.Services;
+using Presentation.Other;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -9,8 +10,14 @@ namespace Presentation.Elements.Explorer.Components
 {
     public class ExplorerTreeVM : ViewModel
     {
-        public ExplorerTreeVM(Dispatcher uiDispatcher)
+        private readonly IDialogService _dialogService;
+        private readonly IContentBuilder _contentBuilder;
+        private readonly IStorageService _storageService;
+        public ExplorerTreeVM(Dispatcher uiDispatcher, IDialogService dialogService, IContentBuilder contentBuilder, IStorageService storageService)
         {
+            _storageService = storageService;
+            _contentBuilder = contentBuilder;
+            _dialogService = dialogService;
             _uiDispatcher = uiDispatcher;
             Items = new ObservableCollection<ExplorerElementVM>();
         }
@@ -75,8 +82,8 @@ namespace Presentation.Elements.Explorer.Components
             _isRefreshing = true; // Устанавливаем флаг
             try
             {
-                StartWatching(Program.Storage.ProjectFolder);
-                LoadProject(Program.Storage.ProjectFolder);
+                StartWatching(_storageService.ProjectFolder);
+                LoadProject(_storageService.ProjectFolder);
             }
             finally
             {
@@ -159,7 +166,7 @@ namespace Presentation.Elements.Explorer.Components
         /// <summary>
         /// Служебный каталог, который не нужно отображать в дереве
         /// </summary>
-        private string _serviceDir => Path.Combine(Program.Storage.ProjectFolder, StorageService.LocalConfigFolder);
+        private string _serviceDir => Path.Combine(_storageService.ProjectFolder, SettingConstants.LocalConfigFolder);
 
         /// <summary>
         /// Рекурсивный перебор проекта
@@ -168,7 +175,7 @@ namespace Presentation.Elements.Explorer.Components
         /// <returns></returns>
         private ExplorerElementVM CreateTreeItem(ExplorerElementVM? parent, FileSystemInfo info)
         {
-            var item = new ExplorerElementVM
+            var item = new ExplorerElementVM(_contentBuilder)
             {
                 Name = info.Name,
                 FullPath = info.FullName,
@@ -206,7 +213,7 @@ namespace Presentation.Elements.Explorer.Components
                 {
                     if (!skip_all_messagess)
                     {
-                        if (MessageBox.Show(e.Message, "Внимание!", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error) == DialogResult.Ignore)
+                        if (_dialogService.ShowAbortRetryIgnoreDialog(e.Message) == Application.Types.DialogResult.Ignore)
                             skip_all_messagess = true;
                     }
                 }
@@ -245,7 +252,7 @@ namespace Presentation.Elements.Explorer.Components
             // Проверка на существование файла/папки с таким именем в новом месте
             if (File.Exists(destinationPath) || Directory.Exists(destinationPath))
             {
-                MessageBox.Show($"Файл или папка с именем '{itemToMove.Name}' уже существует в папке '{newParent.Name}'.", "Ошибка перемещения", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _dialogService.ShowWarning($"Файл или папка с именем '{itemToMove.Name}' уже существует в папке '{newParent.Name}'!");
                 return false;
             }
 
@@ -263,7 +270,7 @@ namespace Presentation.Elements.Explorer.Components
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при перемещении: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _dialogService.ShowError($"Ошибка при перемещении: {ex.Message}");
                 return false;
             }
         }

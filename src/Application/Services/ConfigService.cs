@@ -1,37 +1,25 @@
-﻿using Presentation.Model;
+﻿using Application.Models;
 using System.Diagnostics;
-using System.IO;
 using System.Text.Json;
 
-namespace Presentation.Services
+namespace Application.Services
 {
-    public class ConfigService
+    /// <param name="globalConfigPath">
+    /// Относительный маршрут настроек программы
+    /// </param>
+    /// <param name="localConfigFileName">
+    /// Файл настроек проекта
+    /// </param>
+    /// <param name="localConfigFolder">
+    /// Каталог служебных файлов проекта
+    /// </param>
+    public class ConfigService(string globalConfigPath, string localConfigFileName, string localConfigFolder)
     {
-        public ConfigService(string globalConfigPath, string localConfigFileName, string localConfigFolder)
-        {
-            GlobalConfigPath = globalConfigPath;
-            LocalConfigFileName = localConfigFileName;
-            LocalConfigFolder = localConfigFolder;
-        }
-
         private readonly JsonSerializerOptions _jsonOptions = new()
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
-
-        /// <summary>
-        /// Относительный маршрут настроек программы
-        /// </summary>
-        private string GlobalConfigPath = "./config/global_config.json";
-        /// <summary>
-        /// Файл настроек проекта
-        /// </summary>
-        private string LocalConfigFileName = "local_config.json";
-        /// <summary>
-        /// Каталог служебных файлов проекта
-        /// </summary>
-        private string LocalConfigFolder = ".Schiza";
 
         public GlobalConfig GC { get; set; } = new(); // Общие настройки приложения
         public LocalConfig LC { get; set; } = new(); // Настройки проекта
@@ -45,16 +33,16 @@ namespace Presentation.Services
         {
             try
             {
-                if (File.Exists(GlobalConfigPath))
+                if (File.Exists(globalConfigPath))
                 {
-                    var json = File.ReadAllText(GlobalConfigPath);
+                    var json = File.ReadAllText(globalConfigPath);
                     GC = JsonSerializer.Deserialize<GlobalConfig>(json, _jsonOptions) ?? new();
                 }
                 else
                 {
 
                     // Создаем директорию если не существует
-                    Directory.CreateDirectory(Path.GetDirectoryName(GlobalConfigPath) ?? ".");
+                    Directory.CreateDirectory(Path.GetDirectoryName(globalConfigPath) ?? ".");
                     CreateDefaultGlobalConfig();
                 }
             }
@@ -72,7 +60,7 @@ namespace Presentation.Services
         /// <returns></returns>
         public void LoadLocalConfig(string directoryPath)
         {
-            var localConfigPath = Path.Combine(directoryPath, LocalConfigFolder, LocalConfigFileName);
+            var localConfigPath = Path.Combine(directoryPath, localConfigFolder, localConfigFileName);
 
             try
             {
@@ -121,9 +109,9 @@ namespace Presentation.Services
         {
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(GlobalConfigPath) ?? ".");
+                Directory.CreateDirectory(Path.GetDirectoryName(globalConfigPath) ?? ".");
                 var json = JsonSerializer.Serialize(GC, _jsonOptions);
-                File.WriteAllText(GlobalConfigPath, json);
+                File.WriteAllText(globalConfigPath, json);
             }
             catch (Exception ex)
             {
@@ -143,7 +131,7 @@ namespace Presentation.Services
                 return;
             }
 
-            var localConfigPath = Path.Combine(directoryPath, LocalConfigFolder, LocalConfigFileName);
+            var localConfigPath = Path.Combine(directoryPath, localConfigFolder, localConfigFileName);
 
             try
             {
