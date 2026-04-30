@@ -8,7 +8,7 @@ namespace Schiza.Tests.DomainTests
     public class PromptBuildTests
     {
         [Fact]
-        public void Test()
+        public void Build_ReturnCorrectlyPrompt()
         {
             var file1 = new File("""1. ##path##:##content##""", new FilePath("##path##", "/path1/filename.txt"), new FileContent("##content##", "***file-content1***"));
             var file2 = new File("""2. ##path##:##content##""", new FilePath("##path##", "/path2/filename.txt"), new FileContent("##content##", "***file-content2***"));
