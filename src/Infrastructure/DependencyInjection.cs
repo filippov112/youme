@@ -14,6 +14,7 @@ namespace Infrastructure
             services.AddSingleton<IFileSystemManager, FileSystemManager>();
             services.AddSingleton<IFileSystemWrapper, FileSystemWrapper>();
             services.AddSingleton<IDirectoryInfoWrapper, DirectoryInfoWrapper>();
+            services.AddSingleton<ITokenCounter, TokenCounter>();
         }
     }
 }
