@@ -1,6 +1,6 @@
 ﻿using Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Presentation.Windows.Project;
+
 
 namespace Presentation
 {
@@ -10,7 +10,7 @@ namespace Presentation
         {
             var services = new ServiceCollection();
             services.AddInfrastructureServices();
-            services.AddTransient<ProjectView>();
+            //services.AddTransient<ProjectView>();
 
             return services.BuildServiceProvider();
         }
