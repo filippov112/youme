@@ -6,9 +6,9 @@ using System.Text;
 
 namespace Domain.Models.PromptComponents
 {
-    public class Context(List<File> files) : ComplexBlock(string.Empty, [.. files.Select(f => (IComponent)f)]), IComponent
+    public class Context(string key, List<File> files) : ComplexBlock(string.Empty, [.. files.Select(f => (IComponent)f)]), IComponent
     {
-        public string Key => "##project##";
+        public string Key => key;
         public string Value => throw new NotImplementedException();
         public override string Build()
         {

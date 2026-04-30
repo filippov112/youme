@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Domain.Models.PromptComponents
 {
-    public class Rules(string value) : IComponent
+    public class Rules(string key, string value) : IComponent
     {
-        public string Key => "##settings##";
+        public string Key => key;
         public string Value { get; set; } = value;
     }
 }

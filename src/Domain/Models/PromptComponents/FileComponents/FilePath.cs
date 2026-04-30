@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Domain.Models.PromptComponents.FileComponents
 {
-    public class FilePath(string path) : IComponent
+    public class FilePath(string key, string path) : IComponent
     {
-        public string Key => "##path##";
+        public string Key => key;
         public string Value { get; set; } = path;
     }
 }
