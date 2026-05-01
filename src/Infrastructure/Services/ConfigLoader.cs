@@ -21,7 +21,7 @@ namespace Infrastructure.Services
                 return new Config();
             return config;
         }
-        public async Task<Config> LoadLocal(string projectDirectory)
+        public async Task<Config?> LoadLocal(string projectDirectory)
         {
             var filePath = fs.PathCombine(
                     projectDirectory,
@@ -29,12 +29,9 @@ namespace Infrastructure.Services
                     constants.ConfigFileName
                     );
             if (!fs.FileExist(filePath))
-                return new Config();
+                return null;
             string json = await fs.FileReadAsync(filePath);
-            var config = JsonSerializer.Deserialize<Config>(json);
-            if (config == null)
-                return new Config();
-            return config;
+            return JsonSerializer.Deserialize<Config>(json);
         }
 
         public async Task SaveLocal(Config localConfig, string projectDirectory)

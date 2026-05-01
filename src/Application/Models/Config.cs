@@ -27,5 +27,18 @@ namespace Application.Models
             PromptStructure = $"{IntroductionKey}\n`````\n{ContextKey}\n`````\n{QueryKey}\n\n{RulesKey}";
             FileStructure = $"Файл: {FilePathKey}\n````\n{FileContentKey}\n````";
         }
+        public Config(CombinationConfig configDto)
+        {
+            IntroductionKey = configDto.IntroductionKey ;
+            ContextKey = configDto.ContextKey ;
+            RulesKey = configDto.RulesKey ;
+            QueryKey = configDto.QueryKey ;
+            FilePathKey = configDto.FilePathKey ;
+            FileContentKey = configDto.FileContentKey ;
+            PromptStructure = configDto.PromptStructure ;
+            FileStructure = configDto.FileStructure ;
+            IntroductionDef = configDto.IntroductionDef ;
+            RulesDef = configDto.RulesDef ;
+        }
     }
 }

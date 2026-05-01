@@ -108,7 +108,7 @@ namespace Schiza.Tests.InfrastructureTests
         #region LoadLocal Tests
 
         [Fact]
-        public async Task LoadLocal_WhenConfigFileDoesNotExist_ReturnsNewConfig()
+        public async Task LoadLocal_WhenConfigFileDoesNotExist_ReturnsNull()
         {
             // Arrange
             var expectedPath = Path.Combine(_testProjectDirectory, ".schiza", "config.json");
@@ -118,11 +118,7 @@ namespace Schiza.Tests.InfrastructureTests
             var result = await _configLoader.LoadLocal(_testProjectDirectory);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.IsType<Config>(result);
-            Assert.Equal("##intro##", result.IntroductionKey);
-            Assert.Equal("##context##", result.ContextKey);
-
+            Assert.Null(result);
             _mockFs.Verify(f => f.FileReadAsync(It.IsAny<string>()), Times.Never);
         }
 
