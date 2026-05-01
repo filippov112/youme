@@ -1,4 +1,5 @@
 ﻿using Domain.Models.PromptComponents.FileComponents;
+using Infrastructure.Constants;
 using Infrastructure.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using Ude;
 
 namespace Infrastructure.Services
 {
-    public class FileSystemWrapper : IFileSystemWrapper
+    public class FileSystemWrapper(IFileSystemConstants constants) : IFileSystemWrapper
     {
         public void CreateDirectory(string path)
         {
@@ -104,9 +105,9 @@ namespace Infrastructure.Services
             return Path.GetDirectoryName(path);
         }
 
-        public string PathCombine(string path1, string path2)
+        public string PathCombine(params string[] paths)
         {
-            return Path.Combine(path1, path2);
+            return Path.Combine(paths);
         }
 
         /// <summary>
@@ -136,6 +137,14 @@ namespace Infrastructure.Services
             {
                 return false;
             }
+        }
+
+        public string GetApplicationDirectory()
+        {
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var dir = Path.Combine(appData, constants.AppName);
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            return dir;
         }
     }
 }

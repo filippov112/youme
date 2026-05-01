@@ -13,7 +13,8 @@
         public void DirectoryDelete(string path);
         public void FileMove(string from, string to);
         public void DirectoryMove(string from, string to);
-        public string PathCombine(string path1, string path2);
+        public string PathCombine(params string[] prms);
         public bool FileIsReadable(string fullpath);
+        public string GetApplicationDirectory();
     }
 }
