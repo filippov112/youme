@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Application.Interfaces;
+using Application.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 namespace Application
@@ -8,6 +10,8 @@ namespace Application
         public static void AddApplicationServices(this ServiceCollection services)
         {
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+            services.AddSingleton<ISearchService, SearchService>();
+            services.AddSingleton<IConfigService, ConfigService>();
         }
     }
 }
