@@ -18,6 +18,7 @@ namespace Infrastructure
             services.AddSingleton<ITokenCounter, TokenCounter>();
             services.AddSingleton<IConfigLoader, ConfigLoader>();
             services.AddSingleton<IFileSystemConstants, FileSystemConstants>();
+            services.AddSingleton<ICatalogObserver, CatalogObserver>();
         }
     }
 }
