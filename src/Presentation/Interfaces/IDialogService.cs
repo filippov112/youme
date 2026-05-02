@@ -33,5 +33,7 @@ namespace Presentation.Interfaces
         /// <param name="message"></param>
         /// <returns></returns>
         public bool ShowYesNoDialog(string message, string title);
+
+        public string? ShowInputTextDialog(string description, string title, string defaultName);
     }
 }

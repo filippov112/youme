@@ -25,6 +25,10 @@ namespace Presentation
             services.AddTransient<EditorVM>();
             services.AddTransient<Editor>();
 
+            // Explorer
+            services.AddTransient<ExplorerVM>();
+            services.AddTransient<Explorer>();
+
             return services.BuildServiceProvider();
         }
     }

@@ -9,6 +9,11 @@ namespace Presentation.Services
 {
     internal class DialogService : IDialogService
     {
+        public string? ShowInputTextDialog(string description, string title, string defaultName)
+        {
+            return Microsoft.VisualBasic.Interaction.InputBox(description, title, defaultName);
+        }
+
         /// <summary>
         /// Прервать, повторить или проигнорировать в дальнейшем?
         /// </summary>

@@ -16,5 +16,6 @@
         public string PathCombine(params string[] prms);
         public bool FileIsReadable(string fullpath);
         public string GetApplicationDirectory();
+        public bool IsChildPath(string parent, string child);
     }
 }

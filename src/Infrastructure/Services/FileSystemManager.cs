@@ -41,8 +41,12 @@ namespace Infrastructure.Services
         }
         public async Task ChangePathAsync(string oldPath, string newName)
         {
-            var directory = fileSystemWrapper.GetDirectoryName(oldPath) ?? throw new ArgumentException("Invalid path", nameof(oldPath));
+            var directory = fileSystemWrapper.GetDirectoryName(oldPath) ?? 
+                throw new ArgumentException("Invalid path", nameof(oldPath));
             var newPath = fileSystemWrapper.PathCombine(directory, newName);
+
+            if (fileSystemWrapper.IsChildPath(oldPath, newPath))
+                throw new ArgumentException("Invalid path", nameof(newPath));
 
             if (fileSystemWrapper.FileExist(oldPath))
                 await MoveFileAsync(oldPath, newPath);

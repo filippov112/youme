@@ -142,5 +142,21 @@ namespace Infrastructure.Services
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
             return dir;
         }
+
+        public bool IsChildPath(string parent, string child)
+        {
+            var parentInfo = new DirectoryInfo(parent);
+            var childInfo = new DirectoryInfo(child);
+
+            while (childInfo.Parent != null)
+            {
+                if (childInfo.Parent.FullName.Equals(parentInfo.FullName, StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+                childInfo = childInfo.Parent;
+            }
+
+            return false;
+        }
     }
 }
