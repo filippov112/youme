@@ -36,6 +36,10 @@
     <Resource Include="Resources\folder.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Windows\" />
+  </ItemGroup>
+
     <PropertyGroup>
 	    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
 	    <PackageReadmeFile>README.md</PackageReadmeFile>

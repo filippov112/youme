@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Application.Types
+namespace Presentation.Enums
 {
     /// <summary>
     /// Результат диалога с пользователем

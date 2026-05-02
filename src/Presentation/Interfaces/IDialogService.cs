@@ -1,9 +1,10 @@
-﻿using Application.Types;
+﻿using Presentation.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using DialogResult = Presentation.Enums.DialogResult;
 
-namespace Application.Services
+namespace Presentation.Interfaces
 {
     /// <summary>
     /// Сервис взаимодействия с пользователем по средством диалоговых окон

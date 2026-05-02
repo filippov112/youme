@@ -1,27 +1,27 @@
-﻿using Application.Services;
-using Application.Types;
+﻿using Presentation.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
+using MessageBox = System.Windows.Forms.MessageBox;
 
-namespace Infrastructure.Services
+namespace Presentation.Services
 {
-    public class DialogService : IDialogService
+    internal class DialogService : IDialogService
     {
         /// <summary>
         /// Прервать, повторить или проигнорировать в дальнейшем?
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public Application.Types.DialogResult ShowAbortRetryIgnoreDialog(string message)
+        public Enums.DialogResult ShowAbortRetryIgnoreDialog(string message)
         {
             var result = MessageBox.Show(message, "Внимание!", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
             if (result == System.Windows.Forms.DialogResult.Retry)
-                return Application.Types.DialogResult.Retry;
+                return Enums.DialogResult.Retry;
             if (result == System.Windows.Forms.DialogResult.Ignore)
-                return Application.Types.DialogResult.Ignore;
-            return Application.Types.DialogResult.Abort;
+                return Enums.DialogResult.Ignore;
+            return Enums.DialogResult.Abort;
         }
         /// <summary>
         /// Ошибка
