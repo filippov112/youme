@@ -3,9 +3,6 @@ using Application.Models;
 using Infrastructure.Services;
 using MediatR;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Schiza.Tests.InfrastructureTests
 {

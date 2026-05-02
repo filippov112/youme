@@ -1,7 +1,4 @@
 ﻿using Infrastructure.Services;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Schiza.Tests.InfrastructureTests
 {

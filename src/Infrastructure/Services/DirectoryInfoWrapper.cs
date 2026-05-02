@@ -2,7 +2,7 @@
 
 namespace Infrastructure.Services
 {
-    public class DirectoryInfoWrapper: IDirectoryInfoWrapper
+    public class DirectoryInfoWrapper : IDirectoryInfoWrapper
     {
         private readonly FileSystemInfo _info;
         private DirectoryInfoWrapper(FileSystemInfo info)
@@ -12,9 +12,9 @@ namespace Infrastructure.Services
             Name = info.Name;
             IsDirectory = info is DirectoryInfo;
         }
-        public string FullName { get;}
+        public string FullName { get; }
         public string Name { get; }
-        public bool IsDirectory { get;}
+        public bool IsDirectory { get; }
 
         public IEnumerable<IDirectoryInfoWrapper> GetFileSystemInfos()
         {

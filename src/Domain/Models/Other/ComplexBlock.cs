@@ -12,7 +12,7 @@ namespace Domain.Models.Other
             foreach (var component in components)
             {
                 string value;
-                if (component is  ComplexBlock complexComponent)
+                if (component is ComplexBlock complexComponent)
                     value = complexComponent.Build();
                 else
                     value = component.Value;

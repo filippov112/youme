@@ -1,9 +1,6 @@
 ﻿using Domain.Interfaces;
 using Domain.Models.Other;
 using Domain.Models.PromptComponents.FileComponents;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Domain.Models.PromptComponents
 {

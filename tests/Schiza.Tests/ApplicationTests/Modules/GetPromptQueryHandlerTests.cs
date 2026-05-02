@@ -1,6 +1,6 @@
 ﻿using Application.Interfaces;
 using Application.Models;
-using Application.Modules;
+using Application.Queries;
 using Moq;
 
 namespace Schiza.Tests.ApplicationTests.Modules

@@ -6,7 +6,7 @@ namespace Application.Services
     public class SearchService(IFileSystemManager fsm, IConfigService config) : ISearchService
     {
 
-        public async Task<ProjectUnit?> FindMatches(string pattern)
+        public async Task<ProjectUnit?> FindMatchesAsync(string pattern)
         {
             ProjectUnit? tree = await fsm.GetTreeAsync(config.RootDirectory);
             if (tree == null)
@@ -17,12 +17,12 @@ namespace Application.Services
         private ProjectUnit? Find(ProjectUnit unit, string pattern)
         {
             // Листья (файлы)
-            if (!unit.IsDirectory) 
+            if (!unit.IsDirectory)
                 return unit.Name.Contains(pattern) ? unit : null;
 
             List<ProjectUnit> trueChildren = [];
             // Узлы (каталоги)
-            foreach(var child in unit.Children)
+            foreach (var child in unit.Children)
             {
                 var childUnit = Find(child, pattern);
                 if (childUnit != null)

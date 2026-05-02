@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Application.Services
+﻿namespace Application.Services
 {
     // Вспомогательный класс для ленивой асинхронной инициализации
     public class AsyncLazy<T> where T : class

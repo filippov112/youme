@@ -6,9 +6,9 @@ using Domain.Models.PromptComponents.FileComponents;
 using MediatR;
 using File = Domain.Models.PromptComponents.File;
 
-namespace Application.Modules
+namespace Application.Queries
 {
-    public record GetPromptQuery(List<string> filePaths, string query) : IRequest<string>;
+    public record GetPromptQuery(List<string> FilePaths, string Query) : IRequest<string>;
 
     public class GetPromptQueryHandler(IConfigService cs, IFileSystemManager fsm) : IRequestHandler<GetPromptQuery, string>
     {
@@ -16,7 +16,7 @@ namespace Application.Modules
         {
             CombinationConfig config = await cs.GetCombinationConfigAsync();
             List<File> files = [];
-            foreach(var path in request.filePaths)
+            foreach (var path in request.FilePaths)
             {
                 string? content = await fsm.ReadFileAsync(path);
                 var file = new File(
@@ -29,7 +29,7 @@ namespace Application.Modules
             var context = new Context(config.ContextKey, files);
             var intro = new Introduction(config.IntroductionKey, config.IntroductionText);
             var rules = new Rules(config.RulesKey, config.RulesText);
-            var query = new Query(config.QueryKey, request.query);
+            var query = new Query(config.QueryKey, request.Query);
             var prompt = new Prompt(config.PromptStructure, rules, query, intro, context);
 
             string result = prompt.Build();

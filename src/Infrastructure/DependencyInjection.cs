@@ -1,9 +1,9 @@
-﻿using System.Text;
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using Infrastructure.Constants;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text;
 
 namespace Infrastructure
 {

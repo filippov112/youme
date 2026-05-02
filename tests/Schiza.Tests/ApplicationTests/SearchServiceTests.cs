@@ -2,9 +2,6 @@
 using Application.Models;
 using Application.Services;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Schiza.Tests.ApplicationTests
 {
@@ -58,7 +55,7 @@ namespace Schiza.Tests.ApplicationTests
         {
             string pattern1 = "cat";
 
-            var result1 = await _searchService.FindMatches(pattern1);
+            var result1 = await _searchService.FindMatchesAsync(pattern1);
 
             Assert.NotNull(result1);
             Assert.Equal(CollectProjectUnits([], result1), [_file2, _cat1, _cat3]);
@@ -69,7 +66,7 @@ namespace Schiza.Tests.ApplicationTests
         {
             string pattern2 = "bird";
 
-            var result2 = await _searchService.FindMatches(pattern2);
+            var result2 = await _searchService.FindMatchesAsync(pattern2);
 
             Assert.NotNull(result2);
             Assert.Equal(CollectProjectUnits([], result2), [_file6, _cat2, _cat3]);
@@ -80,7 +77,7 @@ namespace Schiza.Tests.ApplicationTests
         {
             string pattern3 = "windows";
 
-            var result3 = await _searchService.FindMatches(pattern3);
+            var result3 = await _searchService.FindMatchesAsync(pattern3);
 
             Assert.Null(result3);
         }

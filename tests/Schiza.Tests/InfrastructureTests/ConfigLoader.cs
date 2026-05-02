@@ -1,11 +1,7 @@
-﻿using System;
-using System.Text;
-using System.Threading.Tasks;
-using Application.Models;
+﻿using Application.Models;
+using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Moq;
-using Xunit;
-using Infrastructure.Interfaces;
 
 namespace Schiza.Tests.InfrastructureTests
 {

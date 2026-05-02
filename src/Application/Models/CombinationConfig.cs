@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Application.Models
+﻿namespace Application.Models
 {
     public record CombinationConfig
     {
@@ -22,7 +18,7 @@ namespace Application.Models
         public string IntroductionText { get; set; } = "";
         public string RulesText { get; set; } = "";
 
-        public CombinationConfig(Config current) 
+        public CombinationConfig(Config current)
         {
             IntroductionKey = current.IntroductionKey;
             ContextKey = current.ContextKey;

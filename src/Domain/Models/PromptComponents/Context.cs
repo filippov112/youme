@@ -1,8 +1,5 @@
 ﻿using Domain.Interfaces;
 using Domain.Models.Other;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Domain.Models.PromptComponents
 {

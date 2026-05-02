@@ -1,9 +1,5 @@
 ﻿using Application.Interfaces;
-using Domain.Models;
 using SharpToken;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Infrastructure.Services
 {

@@ -19,73 +19,7 @@ namespace Schiza.Tests.InfrastructureTests
                 _mockDirectoryInfoFactory.Object);
         }
 
-        #region FileExistsAsync Tests
 
-        [Fact]
-        public async Task FileExistsAsync_WhenFileExists_ReturnsTrue()
-        {
-            // Arrange
-            string path = "C:\\test\\file.txt";
-            _mockFileSystemWrapper.Setup(x => x.FileExist(path)).Returns(true);
-
-            // Act
-            var result = await _fileSystemManager.FileExistsAsync(path);
-
-            // Assert
-            Assert.True(result);
-            _mockFileSystemWrapper.Verify(x => x.FileExist(path), Times.Once);
-        }
-
-        [Fact]
-        public async Task FileExistsAsync_WhenFileDoesNotExist_ReturnsFalse()
-        {
-            // Arrange
-            string path = "C:\\test\\file.txt";
-            _mockFileSystemWrapper.Setup(x => x.FileExist(path)).Returns(false);
-
-            // Act
-            var result = await _fileSystemManager.FileExistsAsync(path);
-
-            // Assert
-            Assert.False(result);
-            _mockFileSystemWrapper.Verify(x => x.FileExist(path), Times.Once);
-        }
-
-        #endregion
-
-        #region DirectoryExistsAsync Tests
-
-        [Fact]
-        public async Task DirectoryExistsAsync_WhenDirectoryExists_ReturnsTrue()
-        {
-            // Arrange
-            string path = "C:\\test";
-            _mockFileSystemWrapper.Setup(x => x.DirectoryExist(path)).Returns(true);
-
-            // Act
-            var result = await _fileSystemManager.DirectoryExistsAsync(path);
-
-            // Assert
-            Assert.True(result);
-            _mockFileSystemWrapper.Verify(x => x.DirectoryExist(path), Times.Once);
-        }
-
-        [Fact]
-        public async Task DirectoryExistsAsync_WhenDirectoryDoesNotExist_ReturnsFalse()
-        {
-            // Arrange
-            string path = "C:\\test";
-            _mockFileSystemWrapper.Setup(x => x.DirectoryExist(path)).Returns(false);
-
-            // Act
-            var result = await _fileSystemManager.DirectoryExistsAsync(path);
-
-            // Assert
-            Assert.False(result);
-            _mockFileSystemWrapper.Verify(x => x.DirectoryExist(path), Times.Once);
-        }
-
-        #endregion
 
         #region ReadFileAsync Tests
 
@@ -393,45 +327,7 @@ namespace Schiza.Tests.InfrastructureTests
 
         #endregion
 
-        #region CreateFileAsync Tests
-
-        [Fact]
-        public async Task CreateFileAsync_WhenDirectoryExists_CreatesFileDirectly()
-        {
-            // Arrange
-            string path = "C:\\test\\file.txt";
-            string directory = "C:\\test";
-
-            _mockFileSystemWrapper.Setup(x => x.GetDirectoryName(path)).Returns(directory);
-            _mockFileSystemWrapper.Setup(x => x.DirectoryExist(directory)).Returns(true);
-
-            // Act
-            await _fileSystemManager.CreateFileAsync(path);
-
-            // Assert
-            _mockFileSystemWrapper.Verify(x => x.CreateDirectory(directory), Times.Never);
-            _mockFileSystemWrapper.Verify(x => x.FileCreateAsync(path), Times.Once);
-        }
-
-        [Fact]
-        public async Task CreateFileAsync_WhenDirectoryDoesNotExist_CreatesDirectoryBeforeFile()
-        {
-            // Arrange
-            string path = "C:\\test\\sub\\file.txt";
-            string directory = "C:\\test\\sub";
-
-            _mockFileSystemWrapper.Setup(x => x.GetDirectoryName(path)).Returns(directory);
-            _mockFileSystemWrapper.Setup(x => x.DirectoryExist(directory)).Returns(false);
-
-            // Act
-            await _fileSystemManager.CreateFileAsync(path);
-
-            // Assert
-            _mockFileSystemWrapper.Verify(x => x.CreateDirectory(directory), Times.Once);
-            _mockFileSystemWrapper.Verify(x => x.FileCreateAsync(path), Times.Once);
-        }
-
-        #endregion
+        
 
         #region CreateDirectoryAsync Tests
 
@@ -450,33 +346,32 @@ namespace Schiza.Tests.InfrastructureTests
 
         #endregion
 
-        #region DeleteFileAsync Tests
+        #region DeleteAsync Tests
 
         [Fact]
-        public async Task DeleteFileAsync_DeletesFile()
+        public async Task DeleteAsync_DeletesFile()
         {
             // Arrange
             string path = "C:\\test\\file.txt";
+            _mockFileSystemWrapper.Setup(x => x.FileExist(path)).Returns(true);
 
             // Act
-            await _fileSystemManager.DeleteFileAsync(path);
+            await _fileSystemManager.DeleteAsync(path);
 
             // Assert
             _mockFileSystemWrapper.Verify(x => x.FileDelete(path), Times.Once);
         }
 
-        #endregion
-
-        #region DeleteDirectoryAsync Tests
-
         [Fact]
-        public async Task DeleteDirectoryAsync_DeletesDirectory()
+        public async Task DeleteAsync_DeletesDirectory()
         {
             // Arrange
             string path = "C:\\test\\dir";
+            _mockFileSystemWrapper.Setup(x => x.FileExist(path)).Returns(false);
+            _mockFileSystemWrapper.Setup(x => x.DirectoryExist(path)).Returns(true);
 
             // Act
-            await _fileSystemManager.DeleteDirectoryAsync(path);
+            await _fileSystemManager.DeleteAsync(path);
 
             // Assert
             _mockFileSystemWrapper.Verify(x => x.DirectoryDelete(path), Times.Once);
@@ -484,46 +379,12 @@ namespace Schiza.Tests.InfrastructureTests
 
         #endregion
 
-        #region MoveFileAsync Tests
+
+
+        #region ChangePathAsync Tests
 
         [Fact]
-        public async Task MoveFileAsync_MovesFile()
-        {
-            // Arrange
-            string sourcePath = "C:\\test\\file.txt";
-            string destPath = "C:\\test\\newfile.txt";
-
-            // Act
-            await _fileSystemManager.MoveFileAsync(sourcePath, destPath);
-
-            // Assert
-            _mockFileSystemWrapper.Verify(x => x.FileMove(sourcePath, destPath), Times.Once);
-        }
-
-        #endregion
-
-        #region MoveDirectoryAsync Tests
-
-        [Fact]
-        public async Task MoveDirectoryAsync_MovesDirectory()
-        {
-            // Arrange
-            string sourcePath = "C:\\test\\dir";
-            string destPath = "C:\\test\\newdir";
-
-            // Act
-            await _fileSystemManager.MoveDirectoryAsync(sourcePath, destPath);
-
-            // Assert
-            _mockFileSystemWrapper.Verify(x => x.DirectoryMove(sourcePath, destPath), Times.Once);
-        }
-
-        #endregion
-
-        #region RenameAsync Tests
-
-        [Fact]
-        public async Task RenameAsync_WhenRenamingFile_MovesFile()
+        public async Task ChangePathAsync_WhenRenamingFile_MovesFile()
         {
             // Arrange
             string oldPath = "C:\\test\\old.txt";
@@ -537,7 +398,7 @@ namespace Schiza.Tests.InfrastructureTests
             _mockFileSystemWrapper.Setup(x => x.DirectoryExist(oldPath)).Returns(false);
 
             // Act
-            await _fileSystemManager.RenameAsync(oldPath, newName);
+            await _fileSystemManager.ChangePathAsync(oldPath, newName);
 
             // Assert
             _mockFileSystemWrapper.Verify(x => x.FileMove(oldPath, newPath), Times.Once);
@@ -545,7 +406,7 @@ namespace Schiza.Tests.InfrastructureTests
         }
 
         [Fact]
-        public async Task RenameAsync_WhenRenamingDirectory_MovesDirectory()
+        public async Task ChangePathAsync_WhenRenamingDirectory_MovesDirectory()
         {
             // Arrange
             string oldPath = "C:\\test\\olddir";
@@ -559,7 +420,7 @@ namespace Schiza.Tests.InfrastructureTests
             _mockFileSystemWrapper.Setup(x => x.DirectoryExist(oldPath)).Returns(true);
 
             // Act
-            await _fileSystemManager.RenameAsync(oldPath, newName);
+            await _fileSystemManager.ChangePathAsync(oldPath, newName);
 
             // Assert
             _mockFileSystemWrapper.Verify(x => x.DirectoryMove(oldPath, newPath), Times.Once);
@@ -567,7 +428,7 @@ namespace Schiza.Tests.InfrastructureTests
         }
 
         [Fact]
-        public async Task RenameAsync_WhenPathNotFound_ThrowsFileNotFoundException()
+        public async Task ChangePathAsync_WhenPathNotFound_ThrowsFileNotFoundException()
         {
             // Arrange
             string oldPath = "C:\\test\\nonexistent";
@@ -580,11 +441,11 @@ namespace Schiza.Tests.InfrastructureTests
 
             // Act & Assert
             await Assert.ThrowsAsync<FileNotFoundException>(() =>
-                _fileSystemManager.RenameAsync(oldPath, newName));
+                _fileSystemManager.ChangePathAsync(oldPath, newName));
         }
 
         [Fact]
-        public async Task RenameAsync_WhenPathHasNoDirectory_ThrowsArgumentException()
+        public async Task ChangePathAsync_WhenPathHasNoDirectory_ThrowsArgumentException()
         {
             // Arrange
             string oldPath = "file.txt";
@@ -594,7 +455,7 @@ namespace Schiza.Tests.InfrastructureTests
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(() =>
-                _fileSystemManager.RenameAsync(oldPath, newName));
+                _fileSystemManager.ChangePathAsync(oldPath, newName));
         }
 
         #endregion

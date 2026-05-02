@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Application.Models
+﻿namespace Application.Models
 {
     public class Config
     {
@@ -21,7 +17,7 @@ namespace Application.Models
         // Значения по умолчанию
         public string IntroductionDef { get; set; } = "";
         public string RulesDef { get; set; } = "";
-            
+
         public Config()
         {
             PromptStructure = $"{IntroductionKey}\n`````\n{ContextKey}\n`````\n{QueryKey}\n\n{RulesKey}";
@@ -29,16 +25,16 @@ namespace Application.Models
         }
         public Config(CombinationConfig configDto)
         {
-            IntroductionKey = configDto.IntroductionKey ;
-            ContextKey = configDto.ContextKey ;
-            RulesKey = configDto.RulesKey ;
-            QueryKey = configDto.QueryKey ;
-            FilePathKey = configDto.FilePathKey ;
-            FileContentKey = configDto.FileContentKey ;
-            PromptStructure = configDto.PromptStructure ;
-            FileStructure = configDto.FileStructure ;
-            IntroductionDef = configDto.IntroductionText ;
-            RulesDef = configDto.RulesText ;
+            IntroductionKey = configDto.IntroductionKey;
+            ContextKey = configDto.ContextKey;
+            RulesKey = configDto.RulesKey;
+            QueryKey = configDto.QueryKey;
+            FilePathKey = configDto.FilePathKey;
+            FileContentKey = configDto.FileContentKey;
+            PromptStructure = configDto.PromptStructure;
+            FileStructure = configDto.FileStructure;
+            IntroductionDef = configDto.IntroductionText;
+            RulesDef = configDto.RulesText;
         }
     }
 }
