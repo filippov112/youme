@@ -19,8 +19,8 @@ namespace Application.Models
         public string FileStructure { get; set; } = "";
 
         // Значения по умолчанию
-        public string IntroductionDef { get; set; } = "";
-        public string RulesDef { get; set; } = "";
+        public string IntroductionText { get; set; } = "";
+        public string RulesText { get; set; } = "";
 
         public CombinationConfig(Config current) 
         {
@@ -36,8 +36,8 @@ namespace Application.Models
             FileStructure = current.FileStructure;
 
             // Значения по умолчанию
-            IntroductionDef = current.IntroductionDef;
-            RulesDef = current.RulesDef;
+            IntroductionText = current.IntroductionDef;
+            RulesText = current.RulesDef;
         }
         public CombinationConfig() { }
     }

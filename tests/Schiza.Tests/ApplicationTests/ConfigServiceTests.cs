@@ -104,7 +104,7 @@ namespace Schiza.Tests.ApplicationTests
 
             // Assert
             Assert.Equal("local_intro", result.IntroductionKey);
-            Assert.Equal("local_rules", result.RulesDef);
+            Assert.Equal("local_rules", result.RulesText);
         }
 
         [Fact]
@@ -125,7 +125,7 @@ namespace Schiza.Tests.ApplicationTests
 
             // Assert
             Assert.Equal("global_intro", result.IntroductionKey);
-            Assert.Equal("global_rules", result.RulesDef);
+            Assert.Equal("global_rules", result.RulesText);
         }
 
         [Fact]
@@ -205,7 +205,7 @@ namespace Schiza.Tests.ApplicationTests
             // Arrange
             var allConfigDto = new AllConfigDto
             {
-                Global = new CombinationConfig { IntroductionKey = "new_global_intro", RulesDef = "new_global_rules" },
+                Global = new CombinationConfig { IntroductionKey = "new_global_intro", RulesText = "new_global_rules" },
                 Local = null
             };
 
@@ -227,8 +227,8 @@ namespace Schiza.Tests.ApplicationTests
             string rootDirectory = "C:\\test";
             var allConfigDto = new AllConfigDto
             {
-                Global = new CombinationConfig { IntroductionKey = "new_global_intro", RulesDef = "new_global_rules" },
-                Local = new CombinationConfig { IntroductionKey = "new_local_intro", RulesDef = "new_local_rules" }
+                Global = new CombinationConfig { IntroductionKey = "new_global_intro", RulesText = "new_global_rules" },
+                Local = new CombinationConfig { IntroductionKey = "new_local_intro", RulesText = "new_local_rules" }
             };
 
             await _configService.SetRootDirectoryAsync(rootDirectory);
@@ -250,7 +250,7 @@ namespace Schiza.Tests.ApplicationTests
             // Arrange
             var allConfigDto = new AllConfigDto
             {
-                Global = new CombinationConfig { IntroductionKey = "updated_global", RulesDef = "updated_rules" },
+                Global = new CombinationConfig { IntroductionKey = "updated_global", RulesText = "updated_rules" },
                 Local = new CombinationConfig { IntroductionKey = "updated_local" }
             };
 

@@ -1,6 +1,6 @@
 ﻿using Application.Interfaces;
+using Application.Models;
 using Application.Services;
-using Domain.Models;
 using Moq;
 using System;
 using System.Collections.Generic;

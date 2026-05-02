@@ -37,8 +37,8 @@ namespace Application.Models
             FileContentKey = configDto.FileContentKey ;
             PromptStructure = configDto.PromptStructure ;
             FileStructure = configDto.FileStructure ;
-            IntroductionDef = configDto.IntroductionDef ;
-            RulesDef = configDto.RulesDef ;
+            IntroductionDef = configDto.IntroductionText ;
+            RulesDef = configDto.RulesText ;
         }
     }
 }

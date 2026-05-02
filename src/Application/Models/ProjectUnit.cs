@@ -1,4 +1,4 @@
-﻿namespace Domain.Models
+﻿namespace Application.Models
 {
     public class ProjectUnit
     {
