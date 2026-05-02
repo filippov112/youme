@@ -18,12 +18,24 @@ namespace Infrastructure.Services
 
         public IEnumerable<IDirectoryInfoWrapper> GetFileSystemInfos()
         {
-            return ((DirectoryInfo)_info).GetFileSystemInfos().Select(fsi => new DirectoryInfoWrapper(fsi));
+            if (IsDirectory)
+                return ((DirectoryInfo)_info).GetFileSystemInfos().Select(fsi => new DirectoryInfoWrapper(fsi));
+            return [];
         }
 
-        public IDirectoryInfoWrapper Create(string directoryPath)
+        public IDirectoryInfoWrapper? Create(string directoryPath)
         {
-            return new DirectoryInfoWrapper(new DirectoryInfo(directoryPath));
+            return CreateStatic(directoryPath);
+        }
+
+        public static IDirectoryInfoWrapper? CreateStatic(string directoryPath)
+        {
+            if (File.Exists(directoryPath))
+                return new DirectoryInfoWrapper(new FileInfo(directoryPath));
+            else if (Directory.Exists(directoryPath))
+                return new DirectoryInfoWrapper(new DirectoryInfo(directoryPath));
+            else
+                return null;
         }
     }
 }

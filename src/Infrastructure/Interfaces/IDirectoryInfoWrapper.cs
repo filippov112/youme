@@ -2,7 +2,7 @@
 {
     public interface IDirectoryInfoWrapper
     {
-        public IDirectoryInfoWrapper Create(string directoryPath);
+        public IDirectoryInfoWrapper? Create(string directoryPath);
         public string Name { get; }
         public string FullName { get; }
         public IEnumerable<IDirectoryInfoWrapper> GetFileSystemInfos();
