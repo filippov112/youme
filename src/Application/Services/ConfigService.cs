@@ -9,13 +9,15 @@ namespace Application.Services
         private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
 
         private Config? _localConfig;
+        private readonly ICatalogObserver _observer;
         private Config? _globalConfig;
         private readonly AsyncLazy<Config> _lazyGlobalConfig;
 
         public string RootDirectory { get; private set; } = string.Empty;
 
-        public ConfigService(IConfigLoader loader)
+        public ConfigService(IConfigLoader loader, ICatalogObserver observer)
         {
+            _observer = observer;
             _loader = loader;
             _lazyGlobalConfig = new AsyncLazy<Config>(() => _loader.LoadGlobal());
         }
@@ -87,6 +89,7 @@ namespace Application.Services
             {
                 RootDirectory = rootDirectory;
                 _localConfig = await _loader.LoadLocal(RootDirectory);
+                _observer.StartObserving();
             }
             finally
             {

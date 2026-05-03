@@ -1,21 +1,21 @@
 ﻿using Application.Interfaces;
 using Application.Models;
-using Application.Queries;
+using Application.Services;
 using Moq;
 
-namespace Schiza.Tests.ApplicationTests.Modules
+namespace Schiza.Tests.ApplicationTests
 {
-    public class GetPromptQueryHandlerTests
+    public class PromptBuilderTests
     {
         private readonly Mock<IConfigService> _configServiceMock;
         private readonly Mock<IFileSystemManager> _fileSystemManagerMock;
-        private readonly GetPromptQueryHandler _handler;
+        private readonly PromptBuilder _builder;
 
-        public GetPromptQueryHandlerTests()
+        public PromptBuilderTests()
         {
             _configServiceMock = new Mock<IConfigService>();
             _fileSystemManagerMock = new Mock<IFileSystemManager>();
-            _handler = new GetPromptQueryHandler(_configServiceMock.Object, _fileSystemManagerMock.Object);
+            _builder = new PromptBuilder(_configServiceMock.Object, _fileSystemManagerMock.Object);
         }
 
         [Fact]
@@ -24,7 +24,6 @@ namespace Schiza.Tests.ApplicationTests.Modules
             // Arrange
             var filePaths = new List<string> { "file1.txt", "file2.txt" };
             var queryText = "Test query";
-            var request = new GetPromptQuery(filePaths, queryText);
 
             var config = new CombinationConfig
             {
@@ -49,7 +48,7 @@ namespace Schiza.Tests.ApplicationTests.Modules
                 .ReturnsAsync("Content 2");
 
             // Act
-            var result = await _handler.Handle(request, CancellationToken.None);
+            var result = await _builder.GetPrompt(filePaths, queryText);
 
             // Assert
             Assert.Contains("Welcome", result);
@@ -69,7 +68,6 @@ namespace Schiza.Tests.ApplicationTests.Modules
         {
             // Arrange
             var filePaths = new List<string> { "path1", "path2", "path3" };
-            var request = new GetPromptQuery(filePaths, "query");
 
             var config = new CombinationConfig
             {
@@ -90,7 +88,7 @@ namespace Schiza.Tests.ApplicationTests.Modules
             }
 
             // Act
-            var result = await _handler.Handle(request, CancellationToken.None);
+            var result = await _builder.GetPrompt(filePaths, "query");
 
             // Assert
             foreach (var path in filePaths)
@@ -104,7 +102,6 @@ namespace Schiza.Tests.ApplicationTests.Modules
         {
             // Arrange
             var filePaths = new List<string>();
-            var request = new GetPromptQuery(filePaths, "query");
 
             var config = new CombinationConfig
             {
@@ -119,7 +116,7 @@ namespace Schiza.Tests.ApplicationTests.Modules
                 .ReturnsAsync(config);
 
             // Act
-            var result = await _handler.Handle(request, CancellationToken.None);
+            var result = await _builder.GetPrompt(filePaths, "query");
 
             // Assert
             Assert.Contains("query", result);
@@ -132,7 +129,6 @@ namespace Schiza.Tests.ApplicationTests.Modules
         {
             // Arrange
             var filePaths = new List<string> { "docs/readme.md", "src/main.cs" };
-            var request = new GetPromptQuery(filePaths, "analyze");
 
             var config = new CombinationConfig
             {
@@ -151,7 +147,7 @@ namespace Schiza.Tests.ApplicationTests.Modules
                 .ReturnsAsync("class Program {}");
 
             // Act
-            await _handler.Handle(request, CancellationToken.None);
+            await _builder.GetPrompt(filePaths, "analyze");
 
             // Assert
             _fileSystemManagerMock.Verify(fsm => fsm.ReadFileAsync("docs/readme.md"), Times.Once);
@@ -164,7 +160,6 @@ namespace Schiza.Tests.ApplicationTests.Modules
             // Arrange
             var filePaths = new List<string> { "test.txt" };
             var queryText = "custom query";
-            var request = new GetPromptQuery(filePaths, queryText);
 
             var expectedIntroKey = "[[INTRO]]";
             var expectedRulesKey = "[[RULES]]";
@@ -198,7 +193,7 @@ namespace Schiza.Tests.ApplicationTests.Modules
                 .ReturnsAsync("file content");
 
             // Act
-            var result = await _handler.Handle(request, CancellationToken.None);
+            var result = await _builder.GetPrompt(filePaths, queryText);
 
             // Assert
             Assert.Contains(expectedIntroText, result);
@@ -216,7 +211,6 @@ namespace Schiza.Tests.ApplicationTests.Modules
         {
             // Arrange
             var filePaths = new List<string> { "missing.txt" };
-            var request = new GetPromptQuery(filePaths, "query");
 
             var config = new CombinationConfig
             {
@@ -234,7 +228,7 @@ namespace Schiza.Tests.ApplicationTests.Modules
 
             // Act & Assert
             await Assert.ThrowsAsync<FileNotFoundException>(() =>
-                _handler.Handle(request, CancellationToken.None));
+                _builder.GetPrompt(filePaths, "query"));
         }
 
         [Fact]
@@ -242,7 +236,6 @@ namespace Schiza.Tests.ApplicationTests.Modules
         {
             // Arrange
             var filePaths = new List<string> { "first.txt", "second.txt", "third.txt" };
-            var request = new GetPromptQuery(filePaths, "query");
 
             var config = new CombinationConfig
             {
@@ -263,7 +256,7 @@ namespace Schiza.Tests.ApplicationTests.Modules
                 .ReturnsAsync("Third content");
 
             // Act
-            var result = await _handler.Handle(request, CancellationToken.None);
+            var result = await _builder.GetPrompt(filePaths, "query");
 
             // Assert
             var firstIndex = result.IndexOf("first.txt");

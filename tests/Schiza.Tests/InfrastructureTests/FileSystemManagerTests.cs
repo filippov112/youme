@@ -1,6 +1,8 @@
-﻿using Infrastructure.Interfaces;
+﻿using Application.Interfaces;
+using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Moq;
+using System.Runtime.CompilerServices;
 
 namespace Schiza.Tests.InfrastructureTests
 {
@@ -8,15 +10,17 @@ namespace Schiza.Tests.InfrastructureTests
     {
         private readonly Mock<IFileSystemWrapper> _mockFileSystemWrapper;
         private readonly Mock<IDirectoryInfoWrapper> _mockDirectoryInfoFactory;
+        private readonly Mock<IConfigService> _mockConfigService;
         private readonly FileSystemManager _fileSystemManager;
 
         public FileSystemManagerTests()
         {
+            _mockConfigService = new Mock<IConfigService>();
             _mockFileSystemWrapper = new Mock<IFileSystemWrapper>();
             _mockDirectoryInfoFactory = new Mock<IDirectoryInfoWrapper>();
             _fileSystemManager = new FileSystemManager(
                 _mockFileSystemWrapper.Object,
-                _mockDirectoryInfoFactory.Object);
+                _mockDirectoryInfoFactory.Object, _mockConfigService.Object);
         }
 
 
@@ -155,9 +159,9 @@ namespace Schiza.Tests.InfrastructureTests
             // Setup readability checks
             _mockFileSystemWrapper.Setup(x => x.FileIsReadable(It.IsAny<string>())).Returns(true);
             _mockFileSystemWrapper.Setup(x => x.FileIsReadable(mockUnreadableFileInfo.Object.FullName)).Returns(false);
-
+            _mockConfigService.Setup(x => x.RootDirectory).Returns(rootPath);
             // Act
-            var result = await _fileSystemManager.GetTreeAsync(rootPath);
+            var result = await _fileSystemManager.GetTreeAsync();
 
             // Assert
             Assert.NotNull(result);
@@ -185,9 +189,9 @@ namespace Schiza.Tests.InfrastructureTests
 
             _mockDirectoryInfoFactory.Setup(x => x.Create(rootPath)).Returns(mockFileInfo.Object);
             _mockFileSystemWrapper.Setup(x => x.FileIsReadable(mockFileInfo.Object.FullName)).Returns(true);
-
+            _mockConfigService.Setup(x => x.RootDirectory).Returns(rootPath);
             // Act
-            var result = await _fileSystemManager.GetTreeAsync(rootPath);
+            var result = await _fileSystemManager.GetTreeAsync();
 
             // Assert
             Assert.NotNull(result);
@@ -211,9 +215,9 @@ namespace Schiza.Tests.InfrastructureTests
 
             _mockDirectoryInfoFactory.Setup(x => x.Create(rootPath)).Returns(mockFileInfo.Object);
             _mockFileSystemWrapper.Setup(x => x.FileIsReadable(mockFileInfo.Object.FullName)).Returns(false);
-
+            _mockConfigService.Setup(x => x.RootDirectory).Returns(rootPath);
             // Act
-            var result = await _fileSystemManager.GetTreeAsync(rootPath);
+            var result = await _fileSystemManager.GetTreeAsync();
 
             // Assert
             Assert.Null(result);
@@ -260,9 +264,9 @@ namespace Schiza.Tests.InfrastructureTests
 
             // Only files in readable subdirectory are checked for readability
             _mockFileSystemWrapper.Setup(x => x.FileIsReadable(It.IsAny<string>())).Returns(true);
-
+            _mockConfigService.Setup(x => x.RootDirectory).Returns(rootPath);
             // Act
-            var result = await _fileSystemManager.GetTreeAsync(rootPath);
+            var result = await _fileSystemManager.GetTreeAsync();
 
             // Assert
             Assert.NotNull(result);
@@ -313,9 +317,9 @@ namespace Schiza.Tests.InfrastructureTests
 
             _mockFileSystemWrapper.Setup(x => x.FileIsReadable(mockReadableFile.Object.FullName)).Returns(true);
             _mockFileSystemWrapper.Setup(x => x.FileIsReadable(mockUnreadableFile.Object.FullName)).Returns(false);
-
+            _mockConfigService.Setup(x => x.RootDirectory).Returns(rootPath);
             // Act
-            var result = await _fileSystemManager.GetTreeAsync(rootPath);
+            var result = await _fileSystemManager.GetTreeAsync();
 
             // Assert
             Assert.NotNull(result);
@@ -490,9 +494,9 @@ namespace Schiza.Tests.InfrastructureTests
 
             _mockFileSystemWrapper.Setup(x => x.FileIsReadable(mockFile1.Object.FullName)).Returns(true);
             _mockFileSystemWrapper.Setup(x => x.FileIsReadable(mockFile2.Object.FullName)).Returns(false);
-
+            _mockConfigService.Setup(x => x.RootDirectory).Returns(rootPath);
             // Act
-            var result = await _fileSystemManager.GetTreeAsync(rootPath);
+            var result = await _fileSystemManager.GetTreeAsync();
 
             // Assert
             Assert.NotNull(result);
@@ -531,9 +535,9 @@ namespace Schiza.Tests.InfrastructureTests
             _mockDirectoryInfoFactory.Setup(x => x.Create(rootPath)).Returns(mockRootInfo.Object);
 
             _mockFileSystemWrapper.Setup(x => x.FileIsReadable(mockFile.Object.FullName)).Returns(false);
-
+            _mockConfigService.Setup(x => x.RootDirectory).Returns(rootPath);
             // Act
-            var result = await _fileSystemManager.GetTreeAsync(rootPath);
+            var result = await _fileSystemManager.GetTreeAsync();
 
             // Assert
             Assert.NotNull(result);

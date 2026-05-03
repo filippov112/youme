@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Presentation.Services
 {
-    internal class HighlightSelector: IHighlightSelector
+    public class HighlightSelector: IHighlightSelector
     {
         public IHighlightingDefinition? SelectHighlight(string filePath)
         {

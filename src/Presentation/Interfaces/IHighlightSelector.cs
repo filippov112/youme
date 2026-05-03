@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Presentation.Interfaces
 {
-    internal interface IHighlightSelector
+    public interface IHighlightSelector
     {
         public IHighlightingDefinition? SelectHighlight(string filePath);
     }

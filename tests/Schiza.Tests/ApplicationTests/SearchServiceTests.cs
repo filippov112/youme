@@ -43,11 +43,11 @@ namespace Schiza.Tests.ApplicationTests
             _cat3 = new ProjectUnit() { IsDirectory = true, Name = "group0", Children = [_file8, _cat1, _cat2] };
 
             _fsm = new Mock<IFileSystemManager>();
-            _fsm.Setup(x => x.GetTreeAsync(path)).ReturnsAsync(_cat3);
+            _fsm.Setup(x => x.GetTreeAsync()).ReturnsAsync(_cat3);
             _cs = new Mock<IConfigService>();
             _cs.Setup(x => x.RootDirectory).Returns(path);
 
-            _searchService = new SearchService(_fsm.Object, _cs.Object);
+            _searchService = new SearchService(_fsm.Object);
         }
 
         [Fact]

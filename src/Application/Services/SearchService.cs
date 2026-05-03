@@ -3,12 +3,12 @@ using Application.Models;
 
 namespace Application.Services
 {
-    public class SearchService(IFileSystemManager fsm, IConfigService config) : ISearchService
+    public class SearchService(IFileSystemManager fsm) : ISearchService
     {
 
         public async Task<ProjectUnit?> FindMatchesAsync(string pattern)
         {
-            ProjectUnit? tree = await fsm.GetTreeAsync(config.RootDirectory);
+            ProjectUnit? tree = await fsm.GetTreeAsync();
             if (tree == null)
                 return null;
             return Find(tree, pattern);

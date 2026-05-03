@@ -4,7 +4,7 @@ using Infrastructure.Interfaces;
 
 namespace Infrastructure.Services
 {
-    public class FileSystemManager(IFileSystemWrapper fileSystemWrapper, IDirectoryInfoWrapper factory) : IFileSystemManager
+    public class FileSystemManager(IFileSystemWrapper fileSystemWrapper, IDirectoryInfoWrapper factory, IConfigService config) : IFileSystemManager
     {
         public async Task<string> ReadFileAsync(string path)
         {
@@ -18,9 +18,11 @@ namespace Infrastructure.Services
 
             await fileSystemWrapper.FileWriteAsync(path, content);
         }
-        public async Task<ProjectUnit?> GetTreeAsync(string rootPath)
+        public async Task<ProjectUnit?> GetTreeAsync()
         {
-            var rootInfo = factory.Create(rootPath);
+            var rootInfo = factory.Create(config.RootDirectory);
+            if (rootInfo == null)
+                return null;
             if (!rootInfo.IsDirectory && !fileSystemWrapper.FileIsReadable(rootInfo.FullName))
                 return null;
             return CreateNode(rootInfo, null);

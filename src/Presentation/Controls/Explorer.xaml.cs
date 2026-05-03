@@ -21,12 +21,13 @@ namespace Presentation.Controls
         private Point _startPoint; // Точка начала перемещения
         private ExplorerItemVM? _draggedItem; // Элемент, который перетаскивается
         private TreeViewItem? _visualDropTarget; // Для визуального выделения
+        private readonly ExplorerVM _vm;
         public Explorer(ExplorerVM vm)
         {
+            _vm = vm;
             DataContext = vm;
             InitializeComponent();
         }
-        public event Action<string>? ElementFocused;
 
         /// <summary>
         /// Транслирует выбор элемента в TreeView в открытие документа в редакторе
@@ -39,7 +40,7 @@ namespace Presentation.Controls
             {
                 if (item == null || item.Type != ItemType.File)
                     return;
-                ElementFocused?.Invoke(item.FullPath);
+                _vm.OpenFile?.Invoke(item.FullPath);
             }
         }
 
@@ -103,7 +104,7 @@ namespace Presentation.Controls
                 {
                     if (_draggedItem != null)
                     {
-                        var data = ((ExplorerVM)DataContext).Move(_draggedItem);
+                        var data = ((ExplorerVM)DataContext).MoveToQuery(_draggedItem);
                         // Инициируем операцию Drag & Drop
                         DragDrop.DoDragDrop(treeExplorer, data, DragDropEffects.Move);
                     }
@@ -297,7 +298,7 @@ namespace Presentation.Controls
                     // Получаем ViewModel для доступа к методу MoveItem
                     if (DataContext is ExplorerVM explorerVM)
                     {
-                        explorerVM.Move(draggedItem.FullPath, Path.Combine(destinationFolder.FullPath, draggedItem.Name));
+                        explorerVM.MoveObjectBetweenDirectories(draggedItem.FullPath, Path.Combine(destinationFolder.FullPath, draggedItem.Name));
                         e.Effects = DragDropEffects.Move;
                     }
                     else

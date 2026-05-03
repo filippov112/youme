@@ -35,5 +35,7 @@ namespace Presentation.Interfaces
         public bool ShowYesNoDialog(string message, string title);
 
         public string? ShowInputTextDialog(string description, string title, string defaultName);
+
+        public string? ShowOpenFolderDialog();
     }
 }

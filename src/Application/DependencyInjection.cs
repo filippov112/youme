@@ -12,6 +12,8 @@ namespace Application
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddSingleton<ISearchService, SearchService>();
             services.AddSingleton<IConfigService, ConfigService>();
+            services.AddSingleton<IPromptBuilder, PromptBuilder>();
+            services.AddSingleton<ICatalogChangedHandler, CatalogChangedHandler>();
         }
     }
 }

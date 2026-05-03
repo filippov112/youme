@@ -1,4 +1,5 @@
-﻿using Presentation.Interfaces;
+﻿using Presentation.Controls;
+using Presentation.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -53,6 +54,26 @@ namespace Presentation.Services
         public bool ShowYesNoDialog(string message, string title)
         {
             return MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes;
+        }
+
+        public string? ShowOpenFolderDialog()
+        {
+            var folderDialog = new FolderBrowserDialog();
+            try
+            {
+                folderDialog.Description = "Выберите проект";
+                folderDialog.UseDescriptionForTitle = true;
+
+                if (folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    return folderDialog.SelectedPath;
+                }
+            }
+            finally
+            {
+                folderDialog.Dispose();
+            }
+            return null;
         }
     }
 }

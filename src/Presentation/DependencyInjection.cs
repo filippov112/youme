@@ -5,6 +5,7 @@ using Presentation.Controls;
 using Presentation.Interfaces;
 using Presentation.Services;
 using Presentation.ViewModels;
+using Presentation.Windows;
 
 
 namespace Presentation
@@ -19,15 +20,19 @@ namespace Presentation
 
             services.AddSingleton<IDialogService, DialogService>();
             services.AddSingleton<IHighlightSelector, HighlightSelector>();
-            //services.AddTransient<ProjectView>();
-
-            // Editor
-            services.AddTransient<EditorVM>();
-            services.AddTransient<Editor>();
+            services.AddSingleton<IBufferExchange, BufferExchange>();
 
             // Explorer
             services.AddTransient<ExplorerVM>();
             services.AddTransient<Explorer>();
+
+            // MainWindow
+            services.AddTransient<MainWindowVM>();
+            services.AddTransient<MainWindow>();
+
+            // Settings
+            services.AddTransient<SettingsWindowVM>();
+            services.AddTransient<SettingsWindow>();
 
             return services.BuildServiceProvider();
         }

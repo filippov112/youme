@@ -22,26 +22,26 @@ namespace Presentation.ViewModels
         }
         private readonly List<string> _expandedPaths = [];
         private readonly List<string> _selectedPaths = [];
-
-        public event Action<string, string> ObjectRenamed;
-        
-        public ExplorerVM(IConfigService config, IDialogService dialogService)
+        private readonly IFileSystemManager _fsm;
+        public Action<string>? OpenFile;
+        public ExplorerVM(IConfigService config, IDialogService dialogService, IFileSystemManager fsm)
         {
+            _fsm = fsm;
             ExplorerContextMenu = new ExplorerMenuVM(this, dialogService);
             _config = config;
         }
         public ExplorerMenuVM ExplorerContextMenu { get; set; }
         
         
-        public DataObject Move(ExplorerItemVM item)
+        public DataObject MoveToQuery(ExplorerItemVM item)
         {
             DataObject data = new("ExplorerItemVM", item);
             data.SetData(DataFormats.Text, Path.GetRelativePath(_config.RootDirectory, item.FullPath));
             return data;
         }
-        public void Move(string from, string to)
+        public void MoveObjectBetweenDirectories(string from, string to)
         {
-            ObjectRenamed?.Invoke(from, to);
+            Task.Run(async () => await _fsm.ChangePathAsync(from, to));
         }
 
         private void SaveTreeState()
