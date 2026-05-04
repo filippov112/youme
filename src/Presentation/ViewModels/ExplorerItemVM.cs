@@ -1,11 +1,10 @@
 ﻿using Application.Models;
 using Presentation.Other;
 using System.Collections.ObjectModel;
-using System.IO;
 
 namespace Presentation.ViewModels
 {
-    public class ExplorerItemVM: ViewModel
+    public class ExplorerItemVM : ViewModel
     {
         public ExplorerItemVM(ExplorerItemVM? parent, ProjectUnit elementDto)
         {
@@ -20,28 +19,28 @@ namespace Presentation.ViewModels
             }
         }
 
-        public void GetSelectedFiles(List<string> container)
+        public void GetSelectedFiles(HashSet<string> container)
         {
             if (Type == ItemType.File && IsSelected)
                 container.Add(FullPath);
             foreach (var item in Children)
                 item.GetSelectedFiles(container);
         }
-        public void GetExpandedDirectories(List<string> container)
+        public void GetExpandedDirectories(HashSet<string> container)
         {
             if (IsExpanded)
                 container.Add(FullPath);
             foreach (var item in Children)
                 item.GetExpandedDirectories(container);
         }
-        public void RestoreSelectedState(List<string> paths)
+        public void RestoreSelectedState(HashSet<string> paths)
         {
             if (paths.Contains(FullPath))
                 IsSelected = true;
             foreach (var item in Children)
                 item.RestoreSelectedState(paths);
         }
-        public void RestoreExpandedState(List<string> paths)
+        public void RestoreExpandedState(HashSet<string> paths)
         {
             if (paths.Contains(FullPath))
                 IsExpanded = true;

@@ -2,7 +2,6 @@
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Moq;
-using System.Runtime.CompilerServices;
 
 namespace Schiza.Tests.InfrastructureTests
 {
@@ -331,7 +330,7 @@ namespace Schiza.Tests.InfrastructureTests
 
         #endregion
 
-        
+
 
         #region CreateDirectoryAsync Tests
 

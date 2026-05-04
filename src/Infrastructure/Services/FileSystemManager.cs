@@ -18,14 +18,12 @@ namespace Infrastructure.Services
 
             await fileSystemWrapper.FileWriteAsync(path, content);
         }
-        public async Task<ProjectUnit?> GetTreeAsync()
+        public async Task<ProjectUnit?> GetTreeAsync(string pattern = "")
         {
             var rootInfo = factory.Create(config.RootDirectory);
             if (rootInfo == null)
                 return null;
-            if (!rootInfo.IsDirectory && !fileSystemWrapper.FileIsReadable(rootInfo.FullName))
-                return null;
-            return CreateNode(rootInfo, null);
+            return await CreateNode(rootInfo, null, pattern);
         }
         public Task CreateDirectoryAsync(string path)
         {
@@ -43,7 +41,7 @@ namespace Infrastructure.Services
         }
         public async Task ChangePathAsync(string oldPath, string newName)
         {
-            var directory = fileSystemWrapper.GetDirectoryName(oldPath) ?? 
+            var directory = fileSystemWrapper.GetDirectoryName(oldPath) ??
                 throw new ArgumentException("Invalid path", nameof(oldPath));
             var newPath = fileSystemWrapper.PathCombine(directory, newName);
 
@@ -78,8 +76,13 @@ namespace Infrastructure.Services
             fileSystemWrapper.DirectoryMove(sourcePath, destinationPath);
             return Task.CompletedTask;
         }
-        private ProjectUnit CreateNode(IDirectoryInfoWrapper info, ProjectUnit? parent)
+        private async Task<ProjectUnit?> CreateNode(IDirectoryInfoWrapper info, ProjectUnit? parent, string pattern)
         {
+            if (!info.IsDirectory && !fileSystemWrapper.FileIsReadable(info.FullName))
+                return null;
+            if (!info.IsDirectory && !string.IsNullOrEmpty(pattern) && !(await ReadFileAsync(info.FullName)).Contains(pattern))
+                return null;
+
             string path = info.FullName;
             var node = new ProjectUnit
             {
@@ -92,12 +95,13 @@ namespace Infrastructure.Services
             {
                 foreach (var childInfo in info.GetFileSystemInfos())
                 {
-                    if (!childInfo.IsDirectory && !fileSystemWrapper.FileIsReadable(childInfo.FullName))
-                        continue;
-                    var childNode = CreateNode(childInfo, node);
-                    node.Children.Add(childNode);
+                    var childNode = await CreateNode(childInfo, node, pattern);
+                    if (childNode != null)
+                        node.Children.Add(childNode);
                 }
             }
+            if (info.IsDirectory && node.Children.Count == 0 && !string.IsNullOrEmpty(pattern))
+                return null;
             return node;
         }
         #endregion

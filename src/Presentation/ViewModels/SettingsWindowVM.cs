@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 namespace Presentation.ViewModels
 {
-    public class SettingsWindowVM: ViewModel
+    public class SettingsWindowVM : ViewModel
     {
         private readonly IConfigService _cs;
         public SettingsWindowVM(IConfigService cs)
@@ -18,7 +18,8 @@ namespace Presentation.ViewModels
         public AllConfigDto Config
         {
             get => _config;
-            set {
+            set
+            {
                 _config = value;
                 OnPropertyChanged();
             }

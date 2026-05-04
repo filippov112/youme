@@ -21,11 +21,11 @@ namespace Presentation.Controls
         private Point _startPoint; // Точка начала перемещения
         private ExplorerItemVM? _draggedItem; // Элемент, который перетаскивается
         private TreeViewItem? _visualDropTarget; // Для визуального выделения
-        private readonly ExplorerVM _vm;
-        public Explorer(ExplorerVM vm)
+        private ExplorerVM VM => (ExplorerVM)DataContext;
+
+
+        public Explorer()
         {
-            _vm = vm;
-            DataContext = vm;
             InitializeComponent();
         }
 
@@ -40,7 +40,7 @@ namespace Presentation.Controls
             {
                 if (item == null || item.Type != ItemType.File)
                     return;
-                _vm.OpenFile?.Invoke(item.FullPath);
+                VM.OpenFile?.Invoke(item.FullPath);
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using Application;
 using Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Presentation.Controls;
 using Presentation.Interfaces;
 using Presentation.Services;
@@ -15,12 +16,16 @@ namespace Presentation
         public static IServiceProvider AddServices()
         {
             var services = new ServiceCollection();
+            services.AddLogging(builder =>
+            {
+                builder.AddConsole();
+                builder.SetMinimumLevel(LogLevel.Information);
+            });
             services.AddApplicationServices();
             services.AddInfrastructureServices();
 
             services.AddSingleton<IDialogService, DialogService>();
             services.AddSingleton<IHighlightSelector, HighlightSelector>();
-            services.AddSingleton<IBufferExchange, BufferExchange>();
 
             // Explorer
             services.AddTransient<ExplorerVM>();
@@ -29,10 +34,6 @@ namespace Presentation
             // MainWindow
             services.AddTransient<MainWindowVM>();
             services.AddTransient<MainWindow>();
-
-            // Settings
-            services.AddTransient<SettingsWindowVM>();
-            services.AddTransient<SettingsWindow>();
 
             return services.BuildServiceProvider();
         }

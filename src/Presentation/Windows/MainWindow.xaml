@@ -36,9 +36,12 @@
                         <ad:LayoutAnchorablePane x:Name="LeftTopPanel">
                             <ad:LayoutAnchorable Title="Проводник" CanClose="False" CanFloat="False">
                                 <Grid>
-                                    <controls:Explorer DataContext="{Binding Explorer}" 
-                                        x:Name="explorerControl"
-                                        ElementSelected="explorerControl_ElementSelected"/>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBox TextChanged="TextBox_TextChanged"/>
+                                    <controls:Explorer Grid.Row="1" DataContext="{Binding Explorer}"/>
                                 </Grid>
                             </ad:LayoutAnchorable>
                         </ad:LayoutAnchorablePane>
@@ -91,7 +94,7 @@
                                         </Grid.ColumnDefinitions>
                                         <Label Content="Примерное число токенов:"/>
                                         <Label x:Name="lWordCounter"
-                                            Content="0"
+                                            Content="{Binding Tokens}"
                                             Grid.Column="1"/>
                                     </Grid>
                                 </Grid>

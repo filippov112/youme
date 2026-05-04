@@ -1,17 +1,20 @@
-﻿using Presentation.Interfaces;
+﻿using Application.Interfaces;
+using Presentation.Interfaces;
 using Presentation.Other;
 using System.IO;
 using System.Windows.Input;
 
 namespace Presentation.ViewModels
 {
-    public class ExplorerMenuVM: ViewModel
+    public class ExplorerMenuVM : ViewModel
     {
         private readonly ExplorerVM _explorer;
         private readonly IDialogService _dialogService;
+        private readonly IFileSystemManager _fsm;
 
-        public ExplorerMenuVM(ExplorerVM explorer, IDialogService dialogService)
+        public ExplorerMenuVM(ExplorerVM explorer, IDialogService dialogService, IFileSystemManager fsm)
         {
+            _fsm = fsm;
             _explorer = explorer;
             _dialogService = dialogService;
 
@@ -29,13 +32,6 @@ namespace Presentation.ViewModels
         public ICommand ExcludeCommand { get; }
         public ICommand RenameCommand { get; }
 
-
-        public event Action<string>? FileCreated;
-        public event Action<string>? FolderCreated;
-        public event Action<string>? ObjectDeleted;
-        public event Action<string>? ObjectExcluded;
-        public event Action<string, string>? ObjectRenamed;
-
         private void CreateFile(ExplorerItemVM? selectedItem)
         {
             ExplorerItemVM? targetParent = selectedItem switch
@@ -52,11 +48,11 @@ namespace Presentation.ViewModels
             }
 
             var fileName = _dialogService.ShowInputTextDialog("Введите имя файла:", "Создать файл", "newfile.txt");
-            if (string.IsNullOrWhiteSpace(fileName)) 
+            if (string.IsNullOrWhiteSpace(fileName))
                 return;
 
             var fullPath = Path.Combine(targetParent.FullPath, fileName);
-            FileCreated?.Invoke(fullPath);
+            Task.Run(() => _fsm.WriteFileAsync(fullPath, string.Empty));
         }
 
         private void CreateFolder(ExplorerItemVM? selectedItem)
@@ -74,16 +70,16 @@ namespace Presentation.ViewModels
                 return;
             }
             var folderName = _dialogService.ShowInputTextDialog("Введите имя каталога:", "Создать каталог", "NewFolder");
-            if (string.IsNullOrWhiteSpace(folderName)) 
+            if (string.IsNullOrWhiteSpace(folderName))
                 return;
 
             var fullPath = Path.Combine(targetParent.FullPath, folderName);
-            FolderCreated?.Invoke(fullPath);
+            Task.Run(() => _fsm.CreateDirectoryAsync(fullPath));
         }
 
         private void DeleteItem(ExplorerItemVM? item)
         {
-            if (item == null) 
+            if (item == null)
                 return;
 
             var confirmMessage = item.Type == ItemType.Folder
@@ -91,14 +87,14 @@ namespace Presentation.ViewModels
                 : $"Удалить файл '{item.Name}'?";
             if (!_dialogService.ShowYesNoDialog(confirmMessage, "Подтверждение удаления"))
                 return;
-            ObjectDeleted?.Invoke(item.FullPath);
+            Task.Run(() => _fsm.DeleteAsync(item.FullPath));
         }
 
         private void ExcludeItem(ExplorerItemVM? item)
         {
-            if (item == null) 
+            if (item == null)
                 return;
-            ObjectExcluded?.Invoke(item.FullPath);
+            //ObjectExcluded?.Invoke(item.FullPath);
         }
 
         private void RenameItem(ExplorerItemVM? item)
@@ -107,11 +103,11 @@ namespace Presentation.ViewModels
 
             var currentName = item.Name;
             var newName = _dialogService.ShowInputTextDialog("Введите новое имя:", "Переименовать", currentName);
-            if (string.IsNullOrWhiteSpace(newName) || newName == currentName) 
+            if (string.IsNullOrWhiteSpace(newName) || newName == currentName)
                 return;
 
             var newFullPath = Path.Combine(Path.GetDirectoryName(item.FullPath) ?? ".", newName);
-            ObjectRenamed?.Invoke(item.FullPath, newFullPath);
+            Task.Run(() => _fsm.ChangePathAsync(item.FullPath, newFullPath));
         }
     }
 }

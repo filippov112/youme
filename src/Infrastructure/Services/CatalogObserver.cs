@@ -92,7 +92,7 @@ namespace Infrastructure.Services
 
         private void OnDebounceTimerTick()
         {
-            _mediator.Send(new CatalogChangedNotification());
+            _mediator.Publish(new CatalogChangedNotification());
         }
 
         private static bool IsTemporaryFile(string? fileName)

@@ -1,14 +1,10 @@
-﻿using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Highlighting;
+﻿using ICSharpCode.AvalonEdit.Highlighting;
 using Presentation.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Presentation.Services
 {
-    public class HighlightSelector: IHighlightSelector
+    public class HighlightSelector : IHighlightSelector
     {
         public IHighlightingDefinition? SelectHighlight(string filePath)
         {

@@ -7,7 +7,7 @@ using System.IO;
 
 namespace Presentation.ViewModels
 {
-    public class ExplorerVM: ViewModel
+    public class ExplorerVM : ViewModel
     {
         private readonly IConfigService _config;
         private ObservableCollection<ExplorerItemVM> _items = [];
@@ -20,19 +20,19 @@ namespace Presentation.ViewModels
                 OnPropertyChanged();
             }
         }
-        private readonly List<string> _expandedPaths = [];
-        private readonly List<string> _selectedPaths = [];
+        private readonly HashSet<string> _expandedPaths = [];
+        private readonly HashSet<string> _selectedPaths = [];
         private readonly IFileSystemManager _fsm;
         public Action<string>? OpenFile;
         public ExplorerVM(IConfigService config, IDialogService dialogService, IFileSystemManager fsm)
         {
             _fsm = fsm;
-            ExplorerContextMenu = new ExplorerMenuVM(this, dialogService);
+            ExplorerContextMenu = new ExplorerMenuVM(this, dialogService, fsm);
             _config = config;
         }
         public ExplorerMenuVM ExplorerContextMenu { get; set; }
-        
-        
+
+        public HashSet<string> SelectedFiles => _selectedPaths;
         public DataObject MoveToQuery(ExplorerItemVM item)
         {
             DataObject data = new("ExplorerItemVM", item);
@@ -46,7 +46,6 @@ namespace Presentation.ViewModels
 
         private void SaveTreeState()
         {
-            ClearTreeState();
             foreach (var item in Items)
             {
                 item.GetExpandedDirectories(_expandedPaths);
@@ -61,9 +60,8 @@ namespace Presentation.ViewModels
                 item.RestoreExpandedState(_expandedPaths);
                 item.RestoreSelectedState(_selectedPaths);
             }
-            ClearTreeState();
         }
-        private void ClearTreeState()
+        public void ClearTreeState()
         {
             _expandedPaths.Clear();
             _selectedPaths.Clear();
@@ -73,18 +71,17 @@ namespace Presentation.ViewModels
         /// Загрузка структуры проекта из файловой системы
         /// </summary>
         /// <param name="rootPath"></param>
-        public void LoadProject(ProjectUnit? rootElement)
+        public void LoadProject(ProjectUnit? rootElement, bool fastReload = true)
         {
-            SaveTreeState();
+            if (fastReload)
+                SaveTreeState();
             Items.Clear();
             if (rootElement == null)
-            {
-                ClearTreeState();
                 return;
-            }
             var rootItem = new ExplorerItemVM(null, rootElement);
             Items.Add(rootItem);
-            RestoreTreeState();
+            if (fastReload)
+                RestoreTreeState();
             OnPropertyChanged();
         }
     }

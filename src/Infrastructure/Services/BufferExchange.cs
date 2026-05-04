@@ -1,10 +1,6 @@
-﻿using Domain.Models;
-using Presentation.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Application.Interfaces;
 
-namespace Presentation.Services
+namespace Infrastructure.Services
 {
     public class BufferExchange : IBufferExchange
     {

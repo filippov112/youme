@@ -42,18 +42,13 @@
 
             <TreeView.ItemContainerStyle>
                 <Style TargetType="{x:Type TreeViewItem}">
-                    <Setter Property="IsExpanded"
-                            Value="{Binding IsExpanded, Mode=TwoWay}"/>
-                    <Setter Property="IsSelected"
-                            Value="{Binding IsFocused, Mode=TwoWay}"/>
-                    <Setter Property="AllowDrop"
-                            Value="True"/>
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                    <Setter Property="IsSelected" Value="{Binding IsFocused, Mode=TwoWay}"/>
+                    <Setter Property="AllowDrop" Value="True"/>
                     <!-- Добавлено для поддержки Drop на уровне элемента -->
                     <Style.Triggers>
-                        <Trigger Property="IsSelected"
-                                 Value="True">
-                            <Setter Property="Background"
-                                    Value="LightBlue"/>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="LightBlue"/>
                         </Trigger>
                     </Style.Triggers>
                 </Style>

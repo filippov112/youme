@@ -7,45 +7,55 @@ using System.Windows.Input;
 
 namespace Presentation.ViewModels
 {
-    public class MainWindowVM: ViewModel
+    public class MainWindowVM : ViewModel
     {
         private readonly IDialogService _dialogs;
         private readonly IConfigService _cs;
         private readonly IFileSystemManager _fsm;
-        private readonly SettingsWindow _settings;
         private readonly IPromptBuilder _promptBuilder;
         private readonly ITokenCounter _counter;
         private readonly IBufferExchange _buffer;
         private readonly ICatalogChangedHandler _catalogChanged;
         private readonly IHighlightSelector _highlightSelector;
-        public MainWindowVM(            
-            ExplorerVM explorer, 
-            IDialogService dialogs, 
-            IConfigService cs, 
-            IFileSystemManager fsm, 
-            SettingsWindow settings,
+        private readonly ICatalogObserver _observer;
+        public MainWindowVM(
+            ExplorerVM explorer,
+            IDialogService dialogs,
+            IConfigService cs,
+            IFileSystemManager fsm,
             IPromptBuilder promptBuilder,
             ITokenCounter counter,
             IBufferExchange buffer,
             ICatalogChangedHandler catalogChanged,
-            IHighlightSelector highlight
+            IHighlightSelector highlight,
+            ICatalogObserver observer
             )
         {
+            _fsm = fsm;
+            _observer = observer;
             _highlightSelector = highlight;
             _buffer = buffer;
             _counter = counter;
             _promptBuilder = promptBuilder;
-            _settings = settings;
             Explorer = explorer;
             Explorer.OpenFile = async (string path) => { await OpenDocument(path); };
             _catalogChanged = catalogChanged;
-            _catalogChanged.CatalogChanged += async () => { Explorer.LoadProject(await fsm.GetTreeAsync()); };
+            _catalogChanged.CatalogChanged += OnCatalogChanged;
             _dialogs = dialogs;
             _cs = cs;
-            _fsm = fsm;
-            OpenProjectCommand = new RelayCommand(_ => { Task.Run(OpenProject); });
+            OpenProjectCommand = new RelayCommand(OpenProject);
             OpenSettingsCommand = new RelayCommand(OpenSettings);
-            BuildPromptCommand = new RelayCommand(_ => { Task.Run(BuildPrompt); });
+            BuildPromptCommand = new RelayCommand(BuildPrompt);
+        }
+
+        private void OnCatalogChanged()
+        {
+            Task.Run(async () =>
+            {
+                var tree = await _fsm.GetTreeAsync(Search);
+                App.Current.Dispatcher.Invoke(() => Explorer.LoadProject(tree));
+                OnPropertyChanged();
+            });
         }
 
         #region Editor
@@ -101,17 +111,23 @@ namespace Presentation.ViewModels
 
         // Build
         public ICommand BuildPromptCommand { get; }
-        private async Task BuildPrompt()
+        private void BuildPrompt(object? _)
         {
-            var files = new List<string>();
-            if (Explorer.Items.Count > 0)
+            Task.Run(async () =>
             {
-                Explorer.Items[0].GetSelectedFiles(files);
-            }
-            Text = await _promptBuilder.GetPrompt(files, Query);
-            Highlight = HighlightingManager.Instance.GetDefinition("markdown");
-            Tokens = _counter.CalcTokenCount(Text).ToString();
-            _buffer.Copy(Text);
+                var files = new HashSet<string>();
+                if (Explorer.Items.Count > 0)
+                    Explorer.Items[0].GetSelectedFiles(files);
+                var filesList = files.Union(Explorer.SelectedFiles).ToList();
+                var text = await _promptBuilder.GetPrompt(filesList, Query);
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    Text = text;
+                    Highlight = HighlightingManager.Instance.GetDefinition("markdown");
+                    Tokens = _counter.CalcTokenCount(Text).ToString();
+                    _buffer.Copy(Text);
+                });
+            });
         }
         #endregion
 
@@ -119,29 +135,49 @@ namespace Presentation.ViewModels
         #region Menu
         public ICommand OpenProjectCommand { get; }
         public ICommand OpenSettingsCommand { get; }
-        private async Task OpenProject()
+        private void OpenProject(object? _)
         {
             string? rootPath = _dialogs.ShowOpenFolderDialog();
             if (rootPath == null)
                 return;
+            Task.Run(async () =>
+            {
+                await _cs.SetRootDirectoryAsync(rootPath);
+                _observer.StartObserving();
+                var tree = await _fsm.GetTreeAsync();
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    Explorer.ClearTreeState();
+                    Explorer.LoadProject(tree, false);
+                    Text = string.Empty;
+                });
+            });
 
-            await _cs.SetRootDirectoryAsync(rootPath);
-            Explorer.LoadProject(await _fsm.GetTreeAsync());
-            Text = string.Empty;
         }
 
         private void OpenSettings(object? e)
         {
-            _settings.ShowDialog();
+            var window = new SettingsWindow(new SettingsWindowVM(_cs));
+            window.ShowDialog();
         }
         #endregion
-        
+
         #region Explorer
         public ExplorerVM Explorer { get; set; }
         public async Task OpenDocument(string path)
         {
             Text = await _fsm.ReadFileAsync(path);
             Highlight = _highlightSelector.SelectHighlight(path) ?? HighlightingManager.Instance.GetDefinition("markdown");
+        }
+        private string _search = "";
+        public string Search
+        {
+            get => _search;
+            set
+            {
+                _search = value;
+                OnCatalogChanged();
+            }
         }
         #endregion
     }

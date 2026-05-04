@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Presentation.Windows;
+using System.Windows;
 
 namespace Presentation
 {
@@ -15,8 +17,8 @@ namespace Presentation
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            //var mainWindow = _provider.GetRequiredService<ProjectView>();
-            //mainWindow.Show();
+            var mainWindow = _provider.GetRequiredService<MainWindow>();
+            mainWindow.Show();
         }
     }
 

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Presentation.Enums
+﻿namespace Presentation.Enums
 {
     /// <summary>
     /// Результат диалога с пользователем

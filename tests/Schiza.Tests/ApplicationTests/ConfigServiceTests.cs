@@ -13,14 +13,12 @@ namespace Schiza.Tests.ApplicationTests
         public ConfigServiceTests()
         {
             _mockLoader = new Mock<IConfigLoader>();
-            var mock_observer = new Mock<ICatalogObserver>();
-            _configService = new ConfigService(_mockLoader.Object, mock_observer.Object);
+            _configService = new ConfigService(_mockLoader.Object);
         }
 
         [Fact]
         public async Task Constructor_ShouldCallLoadGlobal()
         {
-            var mock_observer = new Mock<ICatalogObserver>();
             // Arrange
             var expectedGlobalConfig = new Config
             {
@@ -35,7 +33,7 @@ namespace Schiza.Tests.ApplicationTests
             mock.Setup(x => x.LoadGlobal()).ReturnsAsync(expectedGlobalConfig);
 
             // Act
-            var service = new ConfigService(mock.Object, mock_observer.Object);
+            var service = new ConfigService(mock.Object);
 
             // Assert
             var result = service.GetCombinationConfigAsync();
@@ -115,10 +113,9 @@ namespace Schiza.Tests.ApplicationTests
             // Arrange
             var globalConfig = new Config { IntroductionKey = "global_intro", RulesDef = "global_rules" };
             var mock = new Mock<IConfigLoader>();
-            var mock_observer = new Mock<ICatalogObserver>();
             mock.Setup(x => x.LoadGlobal()).ReturnsAsync(globalConfig);
             mock.Setup(x => x.LoadLocal(It.IsAny<string>())).ReturnsAsync((Config?)null);
-            var configService = new ConfigService(mock.Object, mock_observer.Object);
+            var configService = new ConfigService(mock.Object);
 
             await configService.SetRootDirectoryAsync("C:\\test");
 
@@ -134,11 +131,10 @@ namespace Schiza.Tests.ApplicationTests
         [Fact]
         public async Task GetCombinationConfig_WhenNoConfigsExist_ShouldReturnDefaultConfig()
         {
-            var mock_observer = new Mock<ICatalogObserver>();
             // Arrange
             _mockLoader.Setup(x => x.LoadGlobal()).ReturnsAsync(new Config());
             _mockLoader.Setup(x => x.LoadLocal(It.IsAny<string>())).ReturnsAsync((Config?)null);
-            var configService = new ConfigService(_mockLoader.Object, mock_observer.Object);
+            var configService = new ConfigService(_mockLoader.Object);
             // Act
             var result = await configService.GetCombinationConfigAsync();
 
@@ -166,10 +162,9 @@ namespace Schiza.Tests.ApplicationTests
                 RulesDef = "local_rules",
                 PromptStructure = "local_prompt"
             };
-            var mock_observer = new Mock<ICatalogObserver>();
             _mockLoader.Setup(x => x.LoadGlobal()).ReturnsAsync(globalConfig);
             _mockLoader.Setup(x => x.LoadLocal(It.IsAny<string>())).ReturnsAsync(localConfig);
-            var configService = new ConfigService(_mockLoader.Object, mock_observer.Object);
+            var configService = new ConfigService(_mockLoader.Object);
             await configService.SetRootDirectoryAsync("C:\\test");
 
             // Act
@@ -188,10 +183,9 @@ namespace Schiza.Tests.ApplicationTests
         {
             // Arrange
             var globalConfig = new Config { IntroductionKey = "global_intro" };
-            var mock_observer = new Mock<ICatalogObserver>();
             _mockLoader.Setup(x => x.LoadGlobal()).ReturnsAsync(globalConfig);
             _mockLoader.Setup(x => x.LoadLocal(It.IsAny<string>())).ReturnsAsync((Config?)null);
-            var configService = new ConfigService(_mockLoader.Object, mock_observer.Object);
+            var configService = new ConfigService(_mockLoader.Object);
             await configService.SetRootDirectoryAsync("C:\\test");
 
             // Act

@@ -61,7 +61,7 @@ namespace Schiza.Tests.InfrastructureTests
             // Даем время на обработку события
             Thread.Sleep(100);
 
-            _mediatorMock.Verify(x => x.Send(It.IsAny<CatalogChangedNotification>()),
+            _mediatorMock.Verify(x => x.Publish(It.IsAny<CatalogChangedNotification>()),
                 Times.Never); // Должен сработать debounce
         }
 
@@ -91,7 +91,7 @@ namespace Schiza.Tests.InfrastructureTests
 
             Thread.Sleep(600); // Ждем больше debounce времени
 
-            _mediatorMock.Verify(x => x.Send(It.IsAny<CatalogChangedNotification>()),
+            _mediatorMock.Verify(x => x.Publish(It.IsAny<CatalogChangedNotification>()),
                 Times.Never);
         }
 
@@ -112,7 +112,7 @@ namespace Schiza.Tests.InfrastructureTests
             Thread.Sleep(600);
 
             // Assert
-            _mediatorMock.Verify(x => x.Send(It.IsAny<CatalogChangedNotification>()),
+            _mediatorMock.Verify(x => x.Publish(It.IsAny<CatalogChangedNotification>()),
                 Times.Never);
         }
 
@@ -130,7 +130,7 @@ namespace Schiza.Tests.InfrastructureTests
             await Task.Delay(600);
 
             // Assert
-            _mediatorMock.Verify(x => x.Send(It.IsAny<CatalogChangedNotification>()),
+            _mediatorMock.Verify(x => x.Publish(It.IsAny<CatalogChangedNotification>()),
                 Times.Once);
         }
 
@@ -152,7 +152,7 @@ namespace Schiza.Tests.InfrastructureTests
             await Task.Delay(600);
 
             // Assert
-            _mediatorMock.Verify(x => x.Send(It.IsAny<CatalogChangedNotification>()),
+            _mediatorMock.Verify(x => x.Publish(It.IsAny<CatalogChangedNotification>()),
                 Times.Once);
         }
 
@@ -172,7 +172,7 @@ namespace Schiza.Tests.InfrastructureTests
             await Task.Delay(600);
 
             // Assert
-            _mediatorMock.Verify(x => x.Send(It.IsAny<CatalogChangedNotification>()),
+            _mediatorMock.Verify(x => x.Publish(It.IsAny<CatalogChangedNotification>()),
                 Times.Once);
         }
 
@@ -193,7 +193,7 @@ namespace Schiza.Tests.InfrastructureTests
             await Task.Delay(600);
 
             // Assert
-            _mediatorMock.Verify(x => x.Send(It.IsAny<CatalogChangedNotification>()),
+            _mediatorMock.Verify(x => x.Publish(It.IsAny<CatalogChangedNotification>()),
                 Times.Once);
         }
 
@@ -213,7 +213,7 @@ namespace Schiza.Tests.InfrastructureTests
             await Task.Delay(600);
 
             // Assert - Changed событие не должно вызывать уведомление
-            _mediatorMock.Verify(x => x.Send(It.IsAny<CatalogChangedNotification>()),
+            _mediatorMock.Verify(x => x.Publish(It.IsAny<CatalogChangedNotification>()),
                 Times.Never);
         }
 
@@ -256,7 +256,7 @@ namespace Schiza.Tests.InfrastructureTests
             await Task.Delay(600);
 
             // Assert
-            _mediatorMock.Verify(x => x.Send(It.IsAny<CatalogChangedNotification>()),
+            _mediatorMock.Verify(x => x.Publish(It.IsAny<CatalogChangedNotification>()),
                 Times.Once);
         }
 

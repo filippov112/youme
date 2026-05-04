@@ -8,7 +8,7 @@ using File = Domain.Models.PromptComponents.File;
 
 namespace Application.Services
 {
-    public class PromptBuilder(IConfigService cs, IFileSystemManager fsm): IPromptBuilder
+    public class PromptBuilder(IConfigService cs, IFileSystemManager fsm) : IPromptBuilder
     {
         public async Task<string> GetPrompt(List<string> filePath, string queryText)
         {

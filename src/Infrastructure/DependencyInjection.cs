@@ -19,6 +19,7 @@ namespace Infrastructure
             services.AddSingleton<IConfigLoader, ConfigLoader>();
             services.AddSingleton<IFileSystemConstants, FileSystemConstants>();
             services.AddSingleton<ICatalogObserver, CatalogObserver>();
+            services.AddSingleton<IBufferExchange, BufferExchange>();
         }
     }
 }

@@ -1,8 +1,4 @@
-﻿using Presentation.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using DialogResult = Presentation.Enums.DialogResult;
+﻿using DialogResult = Presentation.Enums.DialogResult;
 
 namespace Presentation.Interfaces
 {

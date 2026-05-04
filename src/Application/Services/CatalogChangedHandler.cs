@@ -4,12 +4,16 @@ using MediatR;
 
 namespace Application.Services
 {
-    public class CatalogChangedHandler : ICatalogChangedHandler, INotificationHandler<CatalogChangedNotification>
+    public class CatalogChanged(ICatalogChangedHandler handler) : INotificationHandler<CatalogChangedNotification>
     {
-        public event Action? CatalogChanged;
         public async Task Handle(CatalogChangedNotification notification, CancellationToken cancellationToken)
         {
-            CatalogChanged?.Invoke();
+            handler.CatalogChanged?.Invoke();
         }
+    }
+
+    public class CatalogChangedHandler : ICatalogChangedHandler
+    {
+        public Action? CatalogChanged { get; set; }
     }
 }

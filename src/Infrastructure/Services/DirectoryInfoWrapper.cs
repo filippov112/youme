@@ -4,7 +4,8 @@ namespace Infrastructure.Services
 {
     public class DirectoryInfoWrapper : IDirectoryInfoWrapper
     {
-        private readonly FileSystemInfo _info;
+        public DirectoryInfoWrapper() { }
+        private readonly FileSystemInfo? _info;
         private DirectoryInfoWrapper(FileSystemInfo info)
         {
             _info = info;
@@ -12,13 +13,13 @@ namespace Infrastructure.Services
             Name = info.Name;
             IsDirectory = info is DirectoryInfo;
         }
-        public string FullName { get; }
-        public string Name { get; }
+        public string FullName { get; } = string.Empty;
+        public string Name { get; } = string.Empty;
         public bool IsDirectory { get; }
 
         public IEnumerable<IDirectoryInfoWrapper> GetFileSystemInfos()
         {
-            if (IsDirectory)
+            if (IsDirectory && _info != null)
                 return ((DirectoryInfo)_info).GetFileSystemInfos().Select(fsi => new DirectoryInfoWrapper(fsi));
             return [];
         }
