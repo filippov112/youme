@@ -1,0 +1,26 @@
+﻿<UserControl x:Class="Pdp.UI.Controls.Menu"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Pdp.UI.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Menu>
+            <MenuItem Header="Проект">
+                <MenuItem Header="Открыть..." Command="{Binding ShowProjectDialogCommand}"/>
+                <MenuItem Header="Последние" ItemsSource="{Binding LastProjects}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Command" Value="{Binding DataContext.OpenProjectCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            <Setter Property="CommandParameter" Value="{Binding Path}" />
+                            <Setter Property="Header" Value="{Binding Path}" />
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="Настройки" Command="{Binding OpenSettingsCommand}"/>
+        </Menu>   
+    </Grid>
+</UserControl>

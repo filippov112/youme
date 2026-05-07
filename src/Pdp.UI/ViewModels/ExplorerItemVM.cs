@@ -51,6 +51,7 @@ namespace Pdp.UI.ViewModels
         private bool _isExpanded;
         private bool _isSelected;
         private bool _isFocused;
+        private bool _isDepended;
 
         public ItemType Type { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -64,6 +65,16 @@ namespace Pdp.UI.ViewModels
             set
             {
                 _isExpanded = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsDepended
+        {
+            get => _isDepended;
+            set
+            {
+                _isDepended = value;
                 OnPropertyChanged();
             }
         }

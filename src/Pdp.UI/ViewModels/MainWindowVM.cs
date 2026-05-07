@@ -143,13 +143,13 @@ namespace Pdp.UI.ViewModels
             Task.Run(async () =>
             {
                 await _cs.SetRootDirectoryAsync(rootPath);
-                _observer.StartObserving();
                 var tree = await _fsm.GetTreeAsync();
                 App.Current.Dispatcher.Invoke(() =>
                 {
                     Explorer.ClearTreeState();
                     Explorer.LoadProject(tree, false);
                     Text = string.Empty;
+                    _observer.StartObserving();
                 });
             });
 

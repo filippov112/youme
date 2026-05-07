@@ -23,20 +23,27 @@
             <TreeView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Создать файл"
-                            Command="{Binding ExplorerContextMenu.CreateFileCommand}"
+                            Command="{Binding CreateFileCommand}"
                             CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                     <MenuItem Header="Создать каталог"
-                            Command="{Binding ExplorerContextMenu.CreateFolderCommand}"
+                            Command="{Binding CreateFolderCommand}"
                             CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                     <MenuItem Header="Удалить"
-                            Command="{Binding ExplorerContextMenu.DeleteCommand}"
-                            CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                    <MenuItem Header="Исключить из проекта"
-                            Command="{Binding ExplorerContextMenu.ExcludeCommand}"
+                            Command="{Binding DeleteCommand}"
                             CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                     <MenuItem Header="Переименовать"
-                            Command="{Binding ExplorerContextMenu.RenameCommand}"
+                            Command="{Binding RenameCommand}"
                             CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                    <MenuItem Header="Исключить глобально"
+                            Command="{Binding ExcludeGlobalCommand}"
+                            CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                    <MenuItem Header="Исключить локально"
+                            Command="{Binding ExcludeLocalCommand}"
+                            CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                    <MenuItem Header="Создать выборку"
+                            Command="{Binding SelectionSaveAsCommand}" />
+                    <MenuItem Header="Обновить существующую выборку"
+                            Command="{Binding SelectionUpdateCommand}" />
                 </ContextMenu>
             </TreeView.ContextMenu>
 
@@ -56,6 +63,7 @@
 
             <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                    
                     <StackPanel Orientation="Horizontal">
                         <CheckBox x:Name="selected"
                                   IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
@@ -64,22 +72,18 @@
                                Height="16"
                                Margin="0,0,5,0"/>
                         <TextBlock Text="{Binding Name}"/>
+                        <Label Content="{Binding Tokens}"/>
                     </StackPanel>
 
                     <HierarchicalDataTemplate.Triggers>
-                        <DataTrigger Binding="{Binding Type}"
-                                     Value="Folder">
-                            <Setter TargetName="img"
-                                    Property="Source"
-                                    Value="/Resources/folder.png"/>
+                        <DataTrigger Binding="{Binding Type}" Value="Folder">
+                            <Setter TargetName="img" Property="Source" Value="/Resources/folder.png"/>
                         </DataTrigger>
-                        <DataTrigger Binding="{Binding Type}"
-                                     Value="File">
-                            <Setter TargetName="img"
-                                    Property="Source"
-                                    Value="/Resources/file.png"/>
+                        <DataTrigger Binding="{Binding Type}" Value="File">
+                            <Setter TargetName="img" Property="Source" Value="/Resources/file.png"/>
                         </DataTrigger>
                     </HierarchicalDataTemplate.Triggers>
+                    
                 </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
         </TreeView>    
