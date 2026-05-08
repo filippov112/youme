@@ -36,7 +36,7 @@
             </StatusBarItem>
 
             <StatusBarItem  Grid.Column="3">
-                <ProgressBar Width="100"/>
+                <ProgressBar Width="100" Value="{Binding ProgressValue}"/>
             </StatusBarItem>
 
         </StatusBar>

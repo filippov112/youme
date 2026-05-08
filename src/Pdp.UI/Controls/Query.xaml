@@ -19,7 +19,7 @@
         </Grid.ColumnDefinitions>
         <TextBox Text="{Binding Query}" Grid.RowSpan="4"/>
         <Button Content="Сохранить локально" Command="{Binding SaveLocalCommand}" Grid.Column="1" Margin="3,3,3,0" Padding="5,3,5,3"/>
-        <Button Content="Сохранить глобально" Command="{Binding SaveGlobal}" Grid.Row="1" Grid.Column="1" Margin="3,3,3,0" Padding="5,3,5,3"/>
+        <Button Content="Сохранить глобально" Command="{Binding SaveGlobalCommand}" Grid.Row="1" Grid.Column="1" Margin="3,3,3,0" Padding="5,3,5,3"/>
         <Button Content="Собрать и копировать" Command="{Binding BuildPromptCommand}" Grid.Row="2" Grid.Column="1" Margin="3,3,3,0" Padding="5,3,5,3" Background="#FF7FEA85"/>
     </Grid>
 </UserControl>

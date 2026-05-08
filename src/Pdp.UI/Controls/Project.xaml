@@ -11,6 +11,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -22,10 +23,10 @@
 
         <TextBox Text="{Binding GraphPath}" Grid.Row="1" IsEnabled="False" Margin="3,3,3,0" Padding="3,3,3,3"/>
         <Button Content="Подключить зависимости" Command="{Binding SelectGraphFileCommand}" Grid.Row="1" Grid.Column="1" Margin="3,3,3,0" Padding="5,3,5,3"/>
+        <CheckBox Content="Не использовать зависимости" IsChecked="{Binding DisabledDependencies}" Grid.Row="2" Margin="3,3,3,0" />
+        <Button Content="Сгенерировать граф зависимостей" Command="{Binding CreateGraphCommand}" Grid.Row="3" Grid.ColumnSpan="2" Margin="3,3,3,0" Padding="5,3,5,3"/>
 
-        <Button Content="Сгенерировать граф зависимостей" Grid.Row="2" Grid.ColumnSpan="2" Margin="3,3,3,0" Padding="5,3,5,3"/>
-
-        <ListBox ItemsSource="{Binding ExternalCatalogs}" Grid.Row="3" Grid.ColumnSpan="2" Margin="3,3,3,3">
+        <ListBox ItemsSource="{Binding ExternalCatalogs}" Grid.Row="4" Grid.ColumnSpan="2" Margin="3,3,3,3">
             <ListBox.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Удалить"

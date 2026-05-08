@@ -13,10 +13,10 @@
                     <ListBox.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="Удалить"
-    Command="{Binding DeleteCommand}"
+    Command="{Binding DeleteGlobalCommand}"
     CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                             <MenuItem Header="Переименовать"
-    Command="{Binding RenameCommand}"
+    Command="{Binding RenameGlobalCommand}"
     CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                         </ContextMenu>
                     </ListBox.ContextMenu>
@@ -27,7 +27,7 @@
                             <Border Background="Transparent" Padding="5">
                                 <Border.InputBindings>
                                     <MouseBinding MouseAction="LeftClick" 
-                                        Command="{Binding DataContext.ApplyTemplate, RelativeSource={RelativeSource AncestorType=ListBox}}" 
+                                        Command="{Binding DataContext.ApplyTemplateCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" 
                                         CommandParameter="{Binding Query}" />
                                 </Border.InputBindings>
 
@@ -42,10 +42,10 @@
                     <ListBox.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="Удалить"
-Command="{Binding DeleteCommand}"
+Command="{Binding DeleteLocalCommand}"
 CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                             <MenuItem Header="Переименовать"
-Command="{Binding RenameCommand}"
+Command="{Binding RenameLocalCommand}"
 CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                         </ContextMenu>
                     </ListBox.ContextMenu>
@@ -56,7 +56,7 @@ CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={Relativ
                             <Border Background="Transparent" Padding="5">
                                 <Border.InputBindings>
                                     <MouseBinding MouseAction="LeftClick" 
-                                    Command="{Binding DataContext.ApplyTemplate, RelativeSource={RelativeSource AncestorType=ListBox}}" 
+                                    Command="{Binding DataContext.ApplyTemplateCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" 
                                     CommandParameter="{Binding Query}" />
                                 </Border.InputBindings>
 
