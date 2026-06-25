@@ -3,7 +3,7 @@ using Pdp.App.Models;
 using Pdp.Inf.Interfaces;
 using Pdp.Inf.Services;
 
-namespace Pdp.Tests.InfrastructureTests
+namespace Pdp.Tests.Integration
 {
     public class ConfigLoaderTests
     {

@@ -4,7 +4,7 @@ using Pdp.App.Interfaces;
 using Pdp.App.Models;
 using Pdp.Inf.Services;
 
-namespace Pdp.Tests.InfrastructureTests
+namespace Pdp.Tests.Integration
 {
     public class CatalogObserverTests : IDisposable
     {
