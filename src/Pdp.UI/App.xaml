@@ -1,8 +1,9 @@
 ﻿<Application x:Class="Pdp.UI.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:Pdp.UI">
+             xmlns:local="clr-namespace:Pdp.UI"
+             xmlns:cv="clr-namespace:Pdp.UI.Other.Converters">
     <Application.Resources>
-
+        <cv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Application.Resources>
 </Application>

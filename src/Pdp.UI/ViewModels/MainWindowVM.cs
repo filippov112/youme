@@ -156,7 +156,7 @@ namespace Pdp.UI.ViewModels
 
         private void OpenSettings(object? e)
         {
-            var window = new SettingsWindow(new SettingsWindowVM(_cs));
+            var window = new SettingsWindow(new SettingsWindowVM(_cs, _dialogs));
             window.ShowDialog();
         }
         #endregion

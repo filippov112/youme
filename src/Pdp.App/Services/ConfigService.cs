@@ -46,7 +46,7 @@ namespace Pdp.App.Services
                 return new AllConfigDto()
                 {
                     Global = new CombinationConfig(global ?? new Config()),
-                    Local = _localConfig != null ? new CombinationConfig(_localConfig) : null
+                    Local = _localConfig != null ? new CombinationConfig(_localConfig) : new CombinationConfig(global ?? new Config())
                 };
             }
             finally

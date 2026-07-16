@@ -41,16 +41,22 @@ namespace Pdp.Inf.Services
                     constants.LocalFolderName,
                     constants.ConfigFileName
                     );
-            fs.FileDelete(filePath);
+            if (fs.FileExist(filePath))
+                fs.FileDelete(filePath);
+            var dir = fs.GetDirectoryName(filePath) ?? "";
+            if (!fs.DirectoryExist(dir))
+                fs.CreateDirectory(dir);
             await fs.FileWriteAsync(filePath, JsonSerializer.Serialize(localConfig));
         }
         public async Task SaveGlobal(Config globalConfig)
         {
-            var filePath = fs.PathCombine(
-                    fs.GetApplicationDirectory(),
-                    constants.ConfigFileName
-                    );
-            fs.FileDelete(filePath);
+            var dir = fs.GetApplicationDirectory() ?? "";
+            var filePath = fs.PathCombine(dir, constants.ConfigFileName);
+            if (fs.FileExist(filePath))
+                fs.FileDelete(filePath);
+            
+            if (!fs.DirectoryExist(dir))
+                fs.CreateDirectory(dir);
             await fs.FileWriteAsync(filePath, JsonSerializer.Serialize(globalConfig));
         }
     }
