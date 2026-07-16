@@ -24,6 +24,22 @@
             <MenuItem x:Name="btnSettings"
                     Header="Настройки"
                     Command="{Binding OpenSettingsCommand}" Padding="6,4,6,4"/>
+
+            <!-- Последние проекты -->
+            <MenuItem Header="Последние проекты" 
+                          ItemsSource="{Binding RecentProjects.RecentProjects}">
+
+                <MenuItem.ItemContainerStyle>
+                    <Style TargetType="MenuItem">
+                        <Setter Property="Header" Value="{Binding ProjectName}" />
+                        <Setter Property="ToolTip" Value="{Binding ProjectPath}" />
+                        <Setter Property="Command" 
+                                    Value="{Binding DataContext.RecentProjects.OpenProjectCommand, 
+                                    RelativeSource={RelativeSource AncestorType=Menu}}" />
+                        <Setter Property="CommandParameter" Value="{Binding}" />
+                    </Style>
+                </MenuItem.ItemContainerStyle>
+            </MenuItem>
         </Menu>
         <ad:DockingManager x:Name="DockManager" Grid.Row="1" Margin="6,0,6,6">
             <ad:LayoutRoot>

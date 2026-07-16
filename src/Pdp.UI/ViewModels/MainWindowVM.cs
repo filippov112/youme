@@ -4,6 +4,7 @@ using Pdp.UI.Interfaces;
 using Pdp.UI.Other;
 using Pdp.UI.Windows;
 using System.Windows.Input;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Pdp.UI.ViewModels
 {
@@ -18,8 +19,14 @@ namespace Pdp.UI.ViewModels
         private readonly ICatalogChangedHandler _catalogChanged;
         private readonly IHighlightSelector _highlightSelector;
         private readonly ICatalogObserver _observer;
+        private readonly IRecentProjectsService _recentProjectsService;
+
+        private readonly RecentProjectsVM _recentProjectsViewModel;
+        public RecentProjectsVM RecentProjects => _recentProjectsViewModel;
+
         public MainWindowVM(
             ExplorerVM explorer,
+            IRecentProjectsService recentProjectsService,
             IDialogService dialogs,
             IConfigService cs,
             IFileSystemManager fsm,
@@ -31,6 +38,7 @@ namespace Pdp.UI.ViewModels
             ICatalogObserver observer
             )
         {
+            _recentProjectsService = recentProjectsService;
             _fsm = fsm;
             _observer = observer;
             _highlightSelector = highlight;
@@ -43,9 +51,21 @@ namespace Pdp.UI.ViewModels
             _catalogChanged.CatalogChanged += OnCatalogChanged;
             _dialogs = dialogs;
             _cs = cs;
-            OpenProjectCommand = new RelayCommand(OpenProject);
+
+            _recentProjectsViewModel = new(recentProjectsService);
+            // Подписываемся на событие открытия проекта
+            _recentProjectsViewModel.ProjectOpened += OnProjectOpened;
+
+
+            OpenProjectCommand = new RelayCommand(OpenProjectDialog);
             OpenSettingsCommand = new RelayCommand(OpenSettings);
             BuildPromptCommand = new RelayCommand(BuildPrompt);
+        }
+
+        private void OnProjectOpened(object? sender, ProjectOpenedEventArgs e)
+        {
+            // Открываем проект
+            OpenProject(e.ProjectPath);
         }
 
         private void OnCatalogChanged()
@@ -134,11 +154,18 @@ namespace Pdp.UI.ViewModels
         #region Menu
         public ICommand OpenProjectCommand { get; }
         public ICommand OpenSettingsCommand { get; }
-        private void OpenProject(object? _)
+        private void OpenProjectDialog(object? _)
         {
             string? rootPath = _dialogs.ShowOpenFolderDialog();
             if (rootPath == null)
                 return;
+            OpenProject(rootPath);
+        }
+
+        private void OpenProject(string rootPath)
+        {
+            var name = System.IO.Path.GetFileNameWithoutExtension(rootPath);
+
             Task.Run(async () =>
             {
                 await _cs.SetRootDirectoryAsync(rootPath);
@@ -149,9 +176,11 @@ namespace Pdp.UI.ViewModels
                     Explorer.LoadProject(tree, false);
                     Text = string.Empty;
                     _observer.StartObserving();
+
+                    // Добавляем в список последних
+                    _recentProjectsViewModel.AddRecentProject(rootPath, name);
                 });
             });
-
         }
 
         private void OpenSettings(object? e)

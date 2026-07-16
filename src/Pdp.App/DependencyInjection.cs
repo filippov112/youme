@@ -14,6 +14,7 @@ namespace Pdp.App
             services.AddSingleton<IConfigService, ConfigService>();
             services.AddSingleton<IPromptBuilder, PromptBuilder>();
             services.AddSingleton<ICatalogChangedHandler, CatalogChangedHandler>();
+            services.AddSingleton<IRecentProjectsService, RecentProjectsService>();
         }
     }
 }
