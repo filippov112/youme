@@ -20,6 +20,7 @@ namespace Pdp.Inf
             services.AddSingleton<IFileSystemConstants, FileSystemConstants>();
             services.AddSingleton<ICatalogObserver, CatalogObserver>();
             services.AddSingleton<IBufferExchange, BufferExchange>();
+            services.AddSingleton<ICatalogJsonProcessor, CatalogJsonProcessor>();
         }
     }
 }
