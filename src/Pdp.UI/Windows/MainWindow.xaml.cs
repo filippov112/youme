@@ -35,9 +35,6 @@ namespace Pdp.UI.Windows
         }
         #endregion
 
-        private void TextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
-        {
-            _vm.Search = ((System.Windows.Controls.TextBox)sender).Text;
-        }
+
     }
 }

@@ -18,12 +18,12 @@ namespace Pdp.Inf.Services
 
             await fileSystemWrapper.FileWriteAsync(path, content);
         }
-        public async Task<ProjectUnit?> GetTreeAsync(string pattern = "")
+        public async Task<ProjectUnit?> GetTreeAsync()
         {
             var rootInfo = factory.Create(config.RootDirectory);
             if (rootInfo == null)
                 return null;
-            return await CreateNode(rootInfo, null, pattern);
+            return await CreateNode(rootInfo, null);
         }
         public Task CreateDirectoryAsync(string path)
         {
@@ -76,13 +76,8 @@ namespace Pdp.Inf.Services
             fileSystemWrapper.DirectoryMove(sourcePath, destinationPath);
             return Task.CompletedTask;
         }
-        private async Task<ProjectUnit?> CreateNode(IDirectoryInfoWrapper info, ProjectUnit? parent, string pattern)
+        private async Task<ProjectUnit?> CreateNode(IDirectoryInfoWrapper info, ProjectUnit? parent)
         {
-            if (!info.IsDirectory && !fileSystemWrapper.FileIsReadable(info.FullName))
-                return null;
-            if (!info.IsDirectory && !string.IsNullOrEmpty(pattern) && !(await ReadFileAsync(info.FullName)).Contains(pattern))
-                return null;
-
             string path = info.FullName;
             var node = new ProjectUnit
             {
@@ -95,13 +90,12 @@ namespace Pdp.Inf.Services
             {
                 foreach (var childInfo in info.GetFileSystemInfos())
                 {
-                    var childNode = await CreateNode(childInfo, node, pattern);
+                    var childNode = await CreateNode(childInfo, node);
                     if (childNode != null)
                         node.Children.Add(childNode);
                 }
+                node.Children = [.. node.Children.OrderBy(x => { return !x.IsDirectory; }).ThenBy(x => x.Name)];
             }
-            if (info.IsDirectory && node.Children.Count == 0 && !string.IsNullOrEmpty(pattern))
-                return null;
             return node;
         }
         #endregion

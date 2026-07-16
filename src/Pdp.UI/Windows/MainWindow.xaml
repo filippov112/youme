@@ -35,14 +35,7 @@
                         <!-- Проводник -->
                         <ad:LayoutAnchorablePane x:Name="LeftTopPanel">
                             <ad:LayoutAnchorable Title="Проводник" CanClose="False" CanFloat="False">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                    </Grid.RowDefinitions>
-                                    <TextBox TextChanged="TextBox_TextChanged"/>
-                                    <controls:Explorer Grid.Row="1" DataContext="{Binding Explorer}"/>
-                                </Grid>
+                                <controls:Explorer DataContext="{Binding Explorer}"/>
                             </ad:LayoutAnchorable>
                         </ad:LayoutAnchorablePane>
 

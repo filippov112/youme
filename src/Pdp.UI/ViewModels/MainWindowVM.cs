@@ -52,7 +52,7 @@ namespace Pdp.UI.ViewModels
         {
             Task.Run(async () =>
             {
-                var tree = await _fsm.GetTreeAsync(Search);
+                var tree = await _fsm.GetTreeAsync();
                 App.Current.Dispatcher.Invoke(() => Explorer.LoadProject(tree));
                 OnPropertyChanged();
             });
@@ -131,7 +131,6 @@ namespace Pdp.UI.ViewModels
         }
         #endregion
 
-
         #region Menu
         public ICommand OpenProjectCommand { get; }
         public ICommand OpenSettingsCommand { get; }
@@ -168,16 +167,6 @@ namespace Pdp.UI.ViewModels
         {
             Text = await _fsm.ReadFileAsync(path);
             Highlight = _highlightSelector.SelectHighlight(path) ?? HighlightingManager.Instance.GetDefinition("markdown");
-        }
-        private string _search = "";
-        public string Search
-        {
-            get => _search;
-            set
-            {
-                _search = value;
-                OnCatalogChanged();
-            }
         }
         #endregion
     }
