@@ -8,7 +8,7 @@ namespace Core.CatalogParser.Models
     public class CatalogItem
     {
         [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
+        public string? Name { get; set; } = null;
 
         [JsonPropertyName("description")]
         public string Description { get; set; } = string.Empty;

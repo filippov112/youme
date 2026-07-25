@@ -55,14 +55,23 @@
             <explorer:ExplorerControl DataContext="{Binding ExplorerViewModel}" Grid.RowSpan="3"/>
 
             <GridSplitter Grid.RowSpan="3" Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
-            
+
             <!-- Область просмотра/редактирования -->
             <editor:EditorControl DataContext="{Binding EditorViewModel}" Grid.Column="2"/>
-            
+
             <GridSplitter Grid.Row="1" Height="5" Grid.ColumnSpan="1" HorizontalAlignment="Stretch" Grid.Column="2" />
 
             <!-- Область ввода запроса -->
             <Grid Grid.Row="2" Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.Background>
+                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
+                </Grid.Background>
+                <Label Content="Запрос / Заполненная структура:" VerticalAlignment="Top" Margin="15,0,0,0"/>
+
                 <!-- Запрос -->
                 <TextBox
                     x:Name="txtMessage"
@@ -73,25 +82,25 @@
                     AutoWordSelection="True"
                     AcceptsTab="True"
                     AcceptsReturn="True" 
-                    Padding="6,4,6,4"/>
+                    Padding="6,4,6,4" Grid.Row="1"/>
 
                 <!-- Копировать -->
                 <Button x:Name="btnContext"
                     Content="Контекст"
                     Command="{Binding BuildContextCommand}"
                     Background="#FF4768FF" HorizontalAlignment="Right" VerticalAlignment="Bottom" Padding="15,5,15,5" 
-                    Margin="0,0,10,10" Height="28" Width="97" Foreground="White"/>
+                    Margin="0,0,10,10" Height="28" Width="97" Foreground="White" Grid.Row="1"/>
 
                 <Button x:Name="btnStruct"
                     Content="Структура"
                     Command="{Binding BuildStructCommand}"
                     Background="#FF4768FF" HorizontalAlignment="Right" VerticalAlignment="Bottom" Padding="15,5,15,5" 
                     Margin="0,0,131,10" Height="28" Width="97" Foreground="White" Grid.Row="1"/>
-                
+
                 <!-- Сумма токенов-->
                 <Grid
                     HorizontalAlignment="Left"
-                    VerticalAlignment="Bottom" Margin="10,0,0,10">
+                    VerticalAlignment="Bottom" Margin="10,0,0,10" Grid.Row="1">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="170"/>
                         <ColumnDefinition Width="Auto"/>
@@ -101,8 +110,9 @@
                         Content="{Binding Tokens}"
                         Grid.Column="1"/>
                 </Grid>
+
             </Grid>
         </Grid>
-        
+
     </Grid>
 </Window>

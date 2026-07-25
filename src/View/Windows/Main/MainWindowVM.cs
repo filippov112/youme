@@ -152,6 +152,9 @@ namespace View.Windows.Main
                 }
                 
                 var text = await _catalogJsonProcessor.ParseDirectoryToJson(includeFiles);
+                if (!string.IsNullOrEmpty(Query))
+                    text = _catalogJsonProcessor.MergeJsonStructures(Query, text);
+
                 App.Current.Dispatcher.Invoke(() =>
                 {
                     EditorViewModel.Text = text;
