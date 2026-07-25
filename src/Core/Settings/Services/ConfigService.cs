@@ -10,6 +10,11 @@ namespace Core.Settings.Services
         /// </summary>
         public string RootDirectory { get; }
 
+        /// <summary>
+        /// Открыт проект
+        /// </summary>
+        public bool ProjectOpened => !string.IsNullOrEmpty(RootDirectory);
+
 
         /// <summary>
         /// Метод обновления корневого каталога проекта (вызывается при открытии)

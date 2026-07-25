@@ -76,11 +76,18 @@
                     Padding="6,4,6,4"/>
 
                 <!-- Копировать -->
-                <Button x:Name="btnCopy"
-                    Content="Копировать"
-                    Command="{Binding BuildPromptCommand}"
-                    Background="#FF4768FF" HorizontalAlignment="Right" VerticalAlignment="Bottom" Padding="15,5,15,5" Margin="0,0,10,10" Height="28" Width="97" Foreground="White"/>
+                <Button x:Name="btnContext"
+                    Content="Контекст"
+                    Command="{Binding BuildContextCommand}"
+                    Background="#FF4768FF" HorizontalAlignment="Right" VerticalAlignment="Bottom" Padding="15,5,15,5" 
+                    Margin="0,0,10,10" Height="28" Width="97" Foreground="White"/>
 
+                <Button x:Name="btnStruct"
+                    Content="Структура"
+                    Command="{Binding BuildStructCommand}"
+                    Background="#FF4768FF" HorizontalAlignment="Right" VerticalAlignment="Bottom" Padding="15,5,15,5" 
+                    Margin="0,0,131,10" Height="28" Width="97" Foreground="White" Grid.Row="1"/>
+                
                 <!-- Сумма токенов-->
                 <Grid
                     HorizontalAlignment="Left"
@@ -96,5 +103,6 @@
                 </Grid>
             </Grid>
         </Grid>
+        
     </Grid>
 </Window>

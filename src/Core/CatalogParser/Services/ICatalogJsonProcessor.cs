@@ -5,9 +5,9 @@
         /// <summary>
         /// Метод 1: Парсинг содержимого каталога и возврат в формате JSON
         /// </summary>
-        /// <param name="directoryPath">Путь к каталогу</param>
+        /// <param name="includeFiles">Только указанные файлы</param>
         /// <returns>JSON-строка с иерархией каталога</returns>
-        public string ParseDirectoryToJson(string directoryPath);
+        public Task<string> ParseDirectoryToJson(string[]? includeFiles = null);
 
         /// <summary>
         /// Метод 2: Объединение двух JSON-структур

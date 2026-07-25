@@ -1,4 +1,5 @@
-﻿using Core.Explorer.Services;
+﻿using Core.CatalogParser.Services;
+using Core.Explorer.Services;
 using Core.PromptBuilder.Service;
 using Core.Settings.Services;
 using Core.Tools;
@@ -19,6 +20,7 @@ namespace View.Windows.Main
         private readonly IConfigService _configService;
         private readonly IFileSystemService _fileSystemService;
         private readonly IPromptService _promptService;
+        private readonly ICatalogJsonProcessor _catalogJsonProcessor;
         private readonly ITokenCounterTool _tokenCounterTool;
         private readonly IBufferExchangeTool _bufferExchangeTool;
         private readonly ICatalogObserver _catalogObserver;
@@ -38,7 +40,8 @@ namespace View.Windows.Main
             ITokenCounterTool tokenCounterService,
             IBufferExchangeTool bufferExchangeService,
             ICatalogChangeEvent catalogChangeEvent,
-            ICatalogObserver catalogObserver
+            ICatalogObserver catalogObserver,
+            ICatalogJsonProcessor catalogJsonProcessor
             )
         {
             EditorViewModel = editor;
@@ -52,6 +55,7 @@ namespace View.Windows.Main
             _configService = configService;
             _bufferExchangeTool = bufferExchangeService;
             _tokenCounterTool = tokenCounterService;
+            _catalogJsonProcessor = catalogJsonProcessor;
 
             ExplorerViewModel.OpenFile = async path => { await OpenDocument(path); };
 
@@ -62,7 +66,8 @@ namespace View.Windows.Main
 
             OpenProjectCommand = new RelayCommand(OpenProjectDialog);
             OpenSettingsCommand = new RelayCommand(OpenSettings);
-            BuildPromptCommand = new RelayCommand(BuildPrompt);
+            BuildContextCommand = new RelayCommand(BuildContext, () => _configService.ProjectOpened);
+            BuildStructCommand = new RelayCommand(BuildStruct, () => _configService.ProjectOpened);
         }
 
         private void OnProjectOpened(object? sender, ProjectOpenedEventArgs e)
@@ -111,8 +116,9 @@ namespace View.Windows.Main
         }
 
         // Build
-        public ICommand BuildPromptCommand { get; }
-        private void BuildPrompt(object? _)
+        public ICommand BuildContextCommand { get; }
+        public ICommand BuildStructCommand { get; }
+        private void BuildContext(object? _)
         {
             Task.Run(async () =>
             {
@@ -125,6 +131,31 @@ namespace View.Windows.Main
                 {
                     EditorViewModel.Text = text;
                     EditorViewModel.Highlight = HighlightingManager.Instance.GetDefinition("markdown");
+                    Tokens = _tokenCounterTool.CalcTokenCount(EditorViewModel.Text).ToString();
+                    _bufferExchangeTool.Copy(EditorViewModel.Text);
+                });
+            });
+        }
+
+        private void BuildStruct(object? _)
+        {
+            Task.Run(async () =>
+            {
+                var files = new HashSet<string>();
+                if (ExplorerViewModel.Items.Count > 0)
+                    ExplorerViewModel.Items[0].GetSelectedFiles(files);
+
+                string[]? includeFiles = null;
+                if (files.Count > 0 || ExplorerViewModel.SelectedFiles.Count > 0)
+                {
+                    includeFiles = [.. files.Union(ExplorerViewModel.SelectedFiles)];
+                }
+                
+                var text = await _catalogJsonProcessor.ParseDirectoryToJson(includeFiles);
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    EditorViewModel.Text = text;
+                    EditorViewModel.Highlight = HighlightingManager.Instance.GetDefinition("json");
                     Tokens = _tokenCounterTool.CalcTokenCount(EditorViewModel.Text).ToString();
                     _bufferExchangeTool.Copy(EditorViewModel.Text);
                 });

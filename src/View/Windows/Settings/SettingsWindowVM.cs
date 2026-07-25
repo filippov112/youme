@@ -154,7 +154,7 @@ namespace View.Windows.Settings
                     var defaultConfig = _configService.GetAllConfigDefault();
                     _allConfig = defaultConfig;
 
-                    IsLocalEnabled = !string.IsNullOrEmpty(_configService.RootDirectory);
+                    IsLocalEnabled = _configService.ProjectOpened;
 
                     OnPropertyChanged(nameof(GlobalConfig));
                     OnPropertyChanged(nameof(LocalConfig));

@@ -1,10 +1,12 @@
 ﻿using Core.CatalogParser.Models;
 using Core.CatalogParser.Services;
+using Core.Explorer.Models;
+using Core.Explorer.Services;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 namespace Inf.CatalogParser;
 
-public class CatalogJsonProcessor : ICatalogJsonProcessor
+public class CatalogJsonProcessor(IFileSystemService fileSystemService) : ICatalogJsonProcessor
 {
 
 
@@ -13,61 +15,59 @@ public class CatalogJsonProcessor : ICatalogJsonProcessor
     /// </summary>
     /// <param name="directoryPath">Путь к каталогу</param>
     /// <returns>JSON-строка с иерархией каталога</returns>
-    public string ParseDirectoryToJson(string directoryPath)
+    public async Task<string> ParseDirectoryToJson(string[]? includeFiles = null)
     {
-        if (!Directory.Exists(directoryPath))
-        {
-            throw new DirectoryNotFoundException($"Каталог не найден: {directoryPath}");
-        }
+        var tree = await fileSystemService.GetTreeAsync();
+        if (tree == null)
+            return string.Empty;
 
-        var rootItem = new CatalogItem
-        {
-            Name = Path.GetFileName(directoryPath),
-            Description = "",
-            IsDirectory = true,
-            Children = new List<CatalogItem>()
-        };
 
-        ParseDirectoryRecursive(directoryPath, rootItem.Children);
+
+        var rootItem = ParseDirectoryRecursive(includeFiles, tree);
 
         // Сериализуем в нужном формате
-        var options = new JsonSerializerOptions
+        JsonSerializerOptions jsonSerializerOptions = new()
         {
             WriteIndented = true,
             Converters = { new CatalogItemConverter() }
         };
+        var options = jsonSerializerOptions;
 
         return JsonSerializer.Serialize(rootItem, options);
     }
 
-    private void ParseDirectoryRecursive(string path, List<CatalogItem> items)
+    private static CatalogItem? ParseDirectoryRecursive(string[]? includeFiles, ProjectUnit contentList)
     {
-        // Добавляем файлы
-        foreach (var file in Directory.GetFiles(path))
+        if (contentList.IsDirectory)
         {
-            items.Add(new CatalogItem
+            var childItems = new List<CatalogItem>();
+            foreach (var child in contentList.Children)
             {
-                Name = Path.GetFileName(file),
-                Description = "",
-                IsDirectory = false,
-                Children = null
-            });
-        }
+                var newItem = ParseDirectoryRecursive(includeFiles, child);
+                if (newItem != null)
+                    childItems.Add(newItem);
+            }
+            if (childItems.Count == 0)
+                return null;
 
-        // Добавляем подкаталоги
-        foreach (var dir in Directory.GetDirectories(path))
-        {
-            var dirItem = new CatalogItem
+            return new CatalogItem
             {
-                Name = Path.GetFileName(dir),
-                Description = "",
+                Name = contentList.Name,
                 IsDirectory = true,
-                Children = new List<CatalogItem>()
+                Children = childItems
             };
-
-            items.Add(dirItem);
-            ParseDirectoryRecursive(dir, dirItem.Children);
         }
+
+        // Если это файл
+        if (includeFiles is null || includeFiles.Contains(contentList.Path))
+        {
+            return new CatalogItem
+            {
+                Name = contentList.Name,
+                IsDirectory = false
+            };
+        }
+        return null;
     }
 
     /// <summary>
@@ -163,11 +163,9 @@ public class CatalogJsonProcessor : ICatalogJsonProcessor
     /// </summary>
     private class CatalogItemConverter : JsonConverter<CatalogItem>
     {
-        public override CatalogItem Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
+        public override CatalogItem Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
             // Для простоты используем стандартную десериализацию
-            return JsonSerializer.Deserialize<CatalogItem>(ref reader, options);
-        }
+            JsonSerializer.Deserialize<CatalogItem>(ref reader, options);
 
         public override void Write(Utf8JsonWriter writer, CatalogItem value, JsonSerializerOptions options)
         {
