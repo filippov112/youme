@@ -51,8 +51,26 @@
                 <RowDefinition Height="auto"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
+            
             <!-- Левая панель Проводник -->
-            <explorer:ExplorerControl DataContext="{Binding ExplorerViewModel}" Grid.RowSpan="3"/>
+            <Grid Grid.RowSpan="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <explorer:ExplorerControl DataContext="{Binding ExplorerViewModel}"/>
+                
+                <StackPanel Grid.Row="1">
+                    <StackPanel.Background>
+                        <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
+                    </StackPanel.Background>
+                    <Button Margin="5"
+                        Command="{Binding PasteDocsCommand}"
+                        Background="#FFC0FFC7" Padding="15,5,15,5" FontWeight="Bold" FontSize="14">Создать документацию</Button>
+                </StackPanel>
+            </Grid>
+
 
             <GridSplitter Grid.RowSpan="3" Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
 
@@ -88,14 +106,16 @@
                 <Button x:Name="btnContext"
                     Content="Контекст"
                     Command="{Binding BuildContextCommand}"
-                    Background="#FF4768FF" HorizontalAlignment="Right" VerticalAlignment="Bottom" Padding="15,5,15,5" 
-                    Margin="0,0,10,10" Height="28" Width="97" Foreground="White" Grid.Row="1"/>
+                    Background="#FFC0FFC7" Padding="15,5,15,5" FontWeight="Bold" FontSize="14"
+                    HorizontalAlignment="Right" VerticalAlignment="Bottom" 
+                    Margin="0,0,10,10" Grid.Row="1"/>
 
                 <Button x:Name="btnStruct"
                     Content="Структура"
                     Command="{Binding BuildStructCommand}"
-                    Background="#FF4768FF" HorizontalAlignment="Right" VerticalAlignment="Bottom" Padding="15,5,15,5" 
-                    Margin="0,0,131,10" Height="28" Width="97" Foreground="White" Grid.Row="1"/>
+                    Background="#FFC0FFC7" Padding="15,5,15,5" FontWeight="Bold" FontSize="14"
+                    HorizontalAlignment="Right" VerticalAlignment="Bottom" 
+                    Margin="0,0,131,10" Grid.Row="1"/>
 
                 <!-- Сумма токенов-->
                 <Grid
@@ -105,10 +125,10 @@
                         <ColumnDefinition Width="170"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Label Content="Примерное число токенов:"/>
+                    <Label Content="Примерное число токенов:" FontSize="14" FontWeight="Bold"/>
                     <Label x:Name="lWordCounter"
                         Content="{Binding Tokens}"
-                        Grid.Column="1"/>
+                        Grid.Column="1" FontSize="16" Foreground="#FF3C6CE2" FontWeight="Bold"/>
                 </Grid>
 
             </Grid>

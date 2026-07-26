@@ -1,6 +1,7 @@
 ﻿using Core.Explorer.Services;
 using Core.PromptBuilder.Service;
 using Core.Settings.Models;
+using Core.Settings.Models.DTO;
 using Core.Settings.Services;
 using Moq;
 
@@ -12,24 +13,27 @@ namespace ProjectStudio.Test.Unit
         public async Task GetPrompt_ShouldBuildPromptCorrectly()
         {
             // Arrange - настраиваем тестовые данные
-            var config = new CombinationConfig
+            var config = new ConfigDto()
             {
-                IntroductionKey = "##intro##",
-                ContextKey = "##context##",
-                RulesKey = "##rules##",
-                QueryKey = "##query##",
-                FilePathKey = "##path##",
-                FileContentKey = "##content##",
-                PromptStructure = "##intro##\n```\n##context##\n```\n##query##\n\n##rules##",
-                FileStructure = "Файл: ##path##\n```\n##content##\n```",
-                IntroductionText = "Ты - ассистент программиста",
-                RulesText = "Отвечай на русском языке"
+                Local = new()
+                {
+                    IntroductionKey = "##intro##",
+                    ContextKey = "##context##",
+                    RulesKey = "##rules##",
+                    QueryKey = "##query##",
+                    FilePathKey = "##path##",
+                    FileContentKey = "##content##",
+                    PromptStructure = "##intro##\n```\n##context##\n```\n##query##\n\n##rules##",
+                    FileStructure = "Файл: ##path##\n```\n##content##\n```",
+                    IntroductionText = "Ты - ассистент программиста",
+                    RulesText = "Отвечай на русском языке"
+                }
             };
 
             // Создаем моки
             var mockConfig = new Mock<IConfigService>();
             mockConfig
-                .Setup(x => x.GetCombinationConfigAsync())
+                .Setup(x => x.GetConfigAsync())
                 .ReturnsAsync(config);
 
             var mockFs = new Mock<IFileSystemService>();

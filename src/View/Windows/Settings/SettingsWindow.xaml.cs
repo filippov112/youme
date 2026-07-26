@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Configuration;
+using System.Windows;
 
 namespace View.Windows.Settings
 {
@@ -13,6 +15,14 @@ namespace View.Windows.Settings
             _vm = vm;
             InitializeComponent();
             DataContext = vm;
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (_vm.OnCloced())
+                base.OnClosing(e);
+            else
+                e.Cancel = true;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Core.CatalogParser.Services;
+using Core.DocsManager.Services;
 using Core.Explorer.Services;
 using Core.PromptBuilder.Service;
 using Core.Settings.Services;
@@ -24,7 +25,7 @@ namespace View.Windows.Main
         private readonly ITokenCounterTool _tokenCounterTool;
         private readonly IBufferExchangeTool _bufferExchangeTool;
         private readonly ICatalogObserver _catalogObserver;
-
+        private readonly IDocsService _docsService;
 
         private readonly ICatalogChangeEvent _catalogChangeEvent; // Событие изменения в каталоге
 
@@ -41,7 +42,8 @@ namespace View.Windows.Main
             IBufferExchangeTool bufferExchangeService,
             ICatalogChangeEvent catalogChangeEvent,
             ICatalogObserver catalogObserver,
-            ICatalogJsonProcessor catalogJsonProcessor
+            ICatalogJsonProcessor catalogJsonProcessor,
+            IDocsService docsService
             )
         {
             EditorViewModel = editor;
@@ -56,6 +58,7 @@ namespace View.Windows.Main
             _bufferExchangeTool = bufferExchangeService;
             _tokenCounterTool = tokenCounterService;
             _catalogJsonProcessor = catalogJsonProcessor;
+            _docsService = docsService;
 
             ExplorerViewModel.OpenFile = async path => { await OpenDocument(path); };
 
@@ -68,6 +71,7 @@ namespace View.Windows.Main
             OpenSettingsCommand = new RelayCommand(OpenSettings);
             BuildContextCommand = new RelayCommand(BuildContext, () => _configService.ProjectOpened);
             BuildStructCommand = new RelayCommand(BuildStruct, () => _configService.ProjectOpened);
+            PasteDocsCommand = new RelayCommand(PastDocs, () => _configService.ProjectOpened);
         }
 
         private void OnProjectOpened(object? sender, ProjectOpenedEventArgs e)
@@ -185,7 +189,7 @@ namespace View.Windows.Main
 
             Task.Run(async () =>
             {
-                await _configService.SetRootDirectoryAsync(rootPath);
+                await _configService.OpenProjectAsync(rootPath);
                 var tree = await _fileSystemService.GetTreeAsync();
                 App.Current.Dispatcher.Invoke(() =>
                 {
@@ -213,6 +217,25 @@ namespace View.Windows.Main
         {
             EditorViewModel.Text = await _fileSystemService.ReadFileAsync(path);
             EditorViewModel.SetHighlight(path);
+        }
+        #endregion
+
+        #region Docs
+        public ICommand PasteDocsCommand { get; private set; }
+        private void PastDocs(object? sender)
+        {
+            Task.Run(async () => {
+                try
+                {
+                    await _docsService.PasteDocsCatalog();
+                }
+                catch(Exception ex) {
+                    App.Current.Dispatcher.Invoke(() =>
+                    {
+                        _dialogService.ShowError(ex.Message);
+                    });
+                }
+            });
         }
         #endregion
     }

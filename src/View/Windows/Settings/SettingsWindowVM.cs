@@ -1,7 +1,9 @@
 ﻿using Core.Settings.Models;
+using Core.Settings.Models.DTO;
 using Core.Settings.Services;
 using System.Windows;
 using System.Windows.Input;
+using System.Xml.Linq;
 using View.Other;
 using View.Services;
 
@@ -10,8 +12,8 @@ namespace View.Windows.Settings
     public class SettingsWindowVM : ViewModel
     {
         private readonly IConfigService _configService;
-        private AllConfigDto _allConfig;
-        private AllConfigDto _originalConfig;
+        private ConfigDto? _allConfig;
+        private ConfigDto? _originalConfig;
         private bool _isGlobalSelected = true;
         private bool _isLocalSelected;
         private bool _isLocalEnabled;
@@ -27,29 +29,29 @@ namespace View.Windows.Settings
             ResetToDefaultCommand = new RelayCommand(ResetToDefault);
             CancelCommand = new RelayCommand(Cancel);
 
-            LoadConfigAsync();
-        }
-
-        private async void LoadConfigAsync()
-        {
             try
             {
-                _allConfig = await _configService.GetAllConfigAsync();
-                _originalConfig = _allConfig with
+                var config = Task.Run(_configService.GetConfigAsync).Result;
+
+                App.Current.Dispatcher.Invoke(() =>
                 {
-                    Global = _allConfig.Global with { },
-                    Local = _allConfig.Local
-                };
-                // Если нет локальной конфигурации, показываем глобальную
-                IsLocalEnabled = !string.IsNullOrEmpty(_configService.RootDirectory);
-                if (!IsLocalEnabled)
-                {
-                    IsGlobalSelected = true;
-                    IsLocalSelected = false;
-                }
-                OnPropertyChanged(nameof(GlobalConfig));
-                OnPropertyChanged(nameof(LocalConfig));
-                OnPropertyChanged(nameof(IsLocalEnabled));
+                    _allConfig = config;
+                    _originalConfig = _allConfig with
+                    {
+                        Global = _allConfig.Global.GetCopy(),
+                        Local = _allConfig.Local?.GetCopy()
+                    };
+                    // Если нет локальной конфигурации, показываем глобальную
+                    IsLocalEnabled = !string.IsNullOrEmpty(_configService.RootDirectory);
+                    if (!IsLocalEnabled)
+                    {
+                        IsGlobalSelected = true;
+                        IsLocalSelected = false;
+                    }
+                    OnPropertyChanged(nameof(GlobalConfig));
+                    OnPropertyChanged(nameof(LocalConfig));
+                    OnPropertyChanged(nameof(IsLocalEnabled));
+                });
             }
             catch (Exception ex)
             {
@@ -57,8 +59,9 @@ namespace View.Windows.Settings
             }
         }
 
-        public CombinationConfig GlobalConfig => _allConfig?.Global;
-        public CombinationConfig LocalConfig => _allConfig?.Local;
+
+        public GlobalConfigDto? GlobalConfig => _allConfig?.Global;
+        public LocalConfigDto? LocalConfig => _allConfig?.Local;
 
         public bool IsGlobalSelected
         {
@@ -128,13 +131,13 @@ namespace View.Windows.Settings
         {
             try
             {
-                await _configService.SaveAllConfigAsync(_allConfig);
+                if (_allConfig is null)
+                    return;
+                await _configService.SaveConfigAsync(_allConfig);
                 _originalConfig = _allConfig with
                 {
-                    Global = _allConfig.Global with
-                    {
-                    },
-                    Local = _allConfig.Local
+                    Global = _allConfig.Global.GetCopy(),
+                    Local = _allConfig.Local?.GetCopy()
                 };
             }
             catch (Exception ex)
@@ -151,7 +154,7 @@ namespace View.Windows.Settings
             {
                 try
                 {
-                    var defaultConfig = _configService.GetAllConfigDefault();
+                    var defaultConfig = _configService.GetDefaultConfig();
                     _allConfig = defaultConfig;
 
                     IsLocalEnabled = _configService.ProjectOpened;
@@ -175,16 +178,21 @@ namespace View.Windows.Settings
 
         private void Cancel(object? _)
         {
+            if (OnCloced())
+                CloseWindow();
+        }
+
+        public bool OnCloced()
+        {
             if (HasChanges())
             {
                 var result = _dialogs.ShowYesNoDialog("У вас есть несохраненные изменения. Вы уверены, что хотите закрыть окно?",
                                            "Подтверждение закрытия");
 
                 if (!result)
-                    return;
+                    return false;
             }
-
-            CloseWindow();
+            return true;
         }
 
         private bool HasChanges()
@@ -193,13 +201,13 @@ namespace View.Windows.Settings
                 return false;
 
             // Сравнение глобальной конфигурации
-            if (!CompareConfigs(_originalConfig.Global, _allConfig.Global))
+            if (!CompareGlobalConfigs(_originalConfig.Global, _allConfig.Global))
                 return true;
 
             // Сравнение локальной конфигурации
             if (_originalConfig.Local != null && _allConfig.Local != null)
             {
-                if (!CompareConfigs(_originalConfig.Local, _allConfig.Local))
+                if (!CompareLocalConfigs(_originalConfig.Local, _allConfig.Local))
                     return true;
             }
             else if (_originalConfig.Local != null || _allConfig.Local != null)
@@ -210,7 +218,7 @@ namespace View.Windows.Settings
             return false;
         }
 
-        private bool CompareConfigs(CombinationConfig a, CombinationConfig b)
+        private static bool CompareLocalConfigs(LocalConfigDto a, LocalConfigDto b)
         {
             if (a == null && b == null) return true;
             if (a == null || b == null) return false;
@@ -225,6 +233,26 @@ namespace View.Windows.Settings
                    a.FileStructure == b.FileStructure &&
                    a.IntroductionText == b.IntroductionText &&
                    a.RulesText == b.RulesText;
+        }
+
+        private static bool CompareGlobalConfigs(GlobalConfigDto a, GlobalConfigDto b)
+        {
+            if (a == null && b == null) return true;
+            if (a == null || b == null) return false;
+
+            return a.IntroductionKey == b.IntroductionKey &&
+                   a.ContextKey == b.ContextKey &&
+                   a.RulesKey == b.RulesKey &&
+                   a.QueryKey == b.QueryKey &&
+                   a.FilePathKey == b.FilePathKey &&
+                   a.FileContentKey == b.FileContentKey &&
+                   a.PromptStructure == b.PromptStructure &&
+                   a.FileStructure == b.FileStructure &&
+                   a.IntroductionText == b.IntroductionText &&
+                   a.RulesText == b.RulesText &&
+                   
+                   a.DocsTemplate == b.DocsTemplate;
+
         }
 
         private void CloseWindow()

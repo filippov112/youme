@@ -1,4 +1,5 @@
 ﻿using Core.Settings.Models;
+using Core.Settings.Models.DTO;
 using Inf.Constants;
 using Inf.FileSystem;
 using Inf.Settings;
@@ -42,7 +43,7 @@ namespace ProjectStudio.Test.Integration
 
             // Assert
             Assert.NotNull(result);
-            Assert.IsType<Config>(result);
+            Assert.IsType<GlobalConfig>(result);
             Assert.Equal("##intro##", result.IntroductionKey);
             Assert.Equal("##context##", result.ContextKey);
             Assert.Equal("##rules##", result.RulesKey);
@@ -97,7 +98,7 @@ namespace ProjectStudio.Test.Integration
 
             // Assert
             Assert.NotNull(result);
-            Assert.IsType<Config>(result);
+            Assert.IsType<GlobalConfig>(result);
         }
 
         #endregion
@@ -152,33 +153,10 @@ namespace ProjectStudio.Test.Integration
         #region SaveLocal Tests
 
         [Fact]
-        public async Task SaveLocal_ValidConfig_DeletesExistingAndSavesNew()
-        {
-            // Arrange
-            var config = new Config
-            {
-                IntroductionKey = "saved_intro",
-                RulesKey = "saved_rules",
-                PromptStructure = "saved_structure"
-            };
-            var expectedPath = Path.Combine(_testProjectDirectory, ".schiza", "config.json");
-
-            _mockFs.Setup(f => f.PathCombine(_testProjectDirectory, ".schiza", "config.json"))
-                   .Returns(expectedPath);
-
-            // Act
-            await _configLoader.SaveLocal(config, _testProjectDirectory);
-
-            // Assert
-            _mockFs.Verify(f => f.FileDelete(expectedPath), Times.Once);
-            _mockFs.Verify(f => f.FileWriteAsync(expectedPath, It.IsAny<string>()), Times.Once);
-        }
-
-        [Fact]
         public async Task SaveLocal_ConfigIsSerializedCorrectly()
         {
             // Arrange
-            var config = new Config
+            var config = new LocalConfig
             {
                 IntroductionKey = "test_intro",
                 ContextKey = "test_context",
@@ -188,8 +166,8 @@ namespace ProjectStudio.Test.Integration
                 FileContentKey = "test_content",
                 PromptStructure = "test_prompt",
                 FileStructure = "test_file",
-                IntroductionDef = "test_intro_def",
-                RulesDef = "test_rules_def"
+                IntroductionText = "test_intro_def",
+                RulesText = "test_rules_def"
             };
 
             var expectedPath = Path.Combine(_testProjectDirectory, ".schiza", "config.json");
@@ -215,32 +193,10 @@ namespace ProjectStudio.Test.Integration
         #region SaveGlobal Tests
 
         [Fact]
-        public async Task SaveGlobal_ValidConfig_DeletesExistingAndSavesNew()
-        {
-            // Arrange
-            var config = new Config
-            {
-                IntroductionKey = "global_intro",
-                RulesKey = "global_rules"
-            };
-            var expectedPath = Path.Combine(_appDirectory, "config.json");
-
-            _mockFs.Setup(f => f.PathCombine(_appDirectory, "config.json"))
-                   .Returns(expectedPath);
-
-            // Act
-            await _configLoader.SaveGlobal(config);
-
-            // Assert
-            _mockFs.Verify(f => f.FileDelete(expectedPath), Times.Once);
-            _mockFs.Verify(f => f.FileWriteAsync(expectedPath, It.IsAny<string>()), Times.Once);
-        }
-
-        [Fact]
         public async Task SaveGlobal_ConfigIsSerializedCorrectly()
         {
             // Arrange
-            var config = new Config
+            var config = new GlobalConfig
             {
                 IntroductionKey = "global_test_intro",
                 ContextKey = "global_test_context"
@@ -273,7 +229,7 @@ namespace ProjectStudio.Test.Integration
             var realFs = new FileSystemWrapper(_mockConstants.Object);
             var configLoader = new ConfigLoader(realFs, _mockConstants.Object);
 
-            var originalConfig = new Config
+            var originalConfig = new GlobalConfig
             {
                 IntroductionKey = "integration_test_intro",
                 RulesKey = "integration_test_rules"

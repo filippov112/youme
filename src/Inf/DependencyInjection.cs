@@ -1,9 +1,11 @@
 ﻿using Core.CatalogParser.Services;
+using Core.DocsManager.Services;
 using Core.Explorer.Services;
 using Core.Settings.Services;
 using Core.Tools;
 using Inf.CatalogParser;
 using Inf.Constants;
+using Inf.DocsManager;
 using Inf.Explorer;
 using Inf.FileSystem;
 using Inf.Settings;
@@ -27,6 +29,7 @@ namespace Inf
             services.AddSingleton<ICatalogObserver, CatalogObserver>();
             services.AddSingleton<IBufferExchangeTool, BufferExchange>();
             services.AddSingleton<ICatalogJsonProcessor, CatalogJsonProcessor>();
+            services.AddSingleton<IDocsService, DocsService>();
         }
     }
 }

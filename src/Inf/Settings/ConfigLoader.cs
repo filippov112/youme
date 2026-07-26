@@ -8,21 +8,21 @@ namespace Inf.Settings
 {
     public class ConfigLoader(IFileSystemWrapper fs, IFileSystemConstants constants) : IConfigLoader
     {
-        public async Task<Config> LoadGlobal()
+        public async Task<GlobalConfig> LoadGlobal()
         {
             var filePath = fs.PathCombine(
                     fs.GetApplicationDirectory(),
                     constants.ConfigFileName
                     );
             if (!fs.FileExist(filePath))
-                return new Config();
+                return new();
             string json = await fs.FileReadAsync(filePath);
-            var config = JsonSerializer.Deserialize<Config>(json);
+            var config = JsonSerializer.Deserialize<GlobalConfig>(json);
             if (config == null)
-                return new Config();
+                return new();
             return config;
         }
-        public async Task<Config?> LoadLocal(string projectDirectory)
+        public async Task<LocalConfig?> LoadLocal(string projectDirectory)
         {
             var filePath = fs.PathCombine(
                     projectDirectory,
@@ -32,10 +32,10 @@ namespace Inf.Settings
             if (!fs.FileExist(filePath))
                 return null;
             string json = await fs.FileReadAsync(filePath);
-            return JsonSerializer.Deserialize<Config>(json);
+            return JsonSerializer.Deserialize<LocalConfig>(json);
         }
 
-        public async Task SaveLocal(Config localConfig, string projectDirectory)
+        public async Task SaveLocal(LocalConfig localConfig, string projectDirectory)
         {
             var filePath = fs.PathCombine(
                     projectDirectory,
@@ -49,7 +49,7 @@ namespace Inf.Settings
                 fs.CreateDirectory(dir);
             await fs.FileWriteAsync(filePath, JsonSerializer.Serialize(localConfig));
         }
-        public async Task SaveGlobal(Config globalConfig)
+        public async Task SaveGlobal(GlobalConfig globalConfig)
         {
             var dir = fs.GetApplicationDirectory() ?? "";
             var filePath = fs.PathCombine(dir, constants.ConfigFileName);

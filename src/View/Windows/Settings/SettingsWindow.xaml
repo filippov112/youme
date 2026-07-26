@@ -77,6 +77,18 @@
             <ScrollViewer Grid.Row="1" 
                          Visibility="{Binding IsGlobalSelected, Converter={StaticResource BooleanToVisibilityConverter}}" Padding="5,5,5,5">
                 <StackPanel>
+
+                    <GroupBox Header="Инициализация проекта" Margin="0,0,0,15">
+                        <Grid>
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="Каталог-шаблон документации:" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding GlobalConfig.DocsTemplate, UpdateSourceTrigger=PropertyChanged}" 
+                        Margin="0,0,0,10"/>
+                            </StackPanel>
+                        </Grid>
+                        
+                    </GroupBox>
+
                     <GroupBox Header="Ключи замены" Margin="0,0,0,15">
                         <Grid>
                             <Grid.ColumnDefinitions>

@@ -4,9 +4,9 @@ namespace Core.Settings.Services
 {
     public interface IConfigLoader
     {
-        public Task<Config> LoadGlobal();
-        public Task<Config?> LoadLocal(string projectDirectory);
-        public Task SaveLocal(Config local, string projectDirectory);
-        public Task SaveGlobal(Config global);
+        public Task<GlobalConfig> LoadGlobal();
+        public Task<LocalConfig?> LoadLocal(string projectDirectory);
+        public Task SaveLocal(LocalConfig config, string projectDirectory);
+        public Task SaveGlobal(GlobalConfig config);
     }
 }

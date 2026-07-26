@@ -1,4 +1,5 @@
 ﻿using Core.Settings.Models;
+using Core.Settings.Models.DTO;
 using Core.Settings.Other;
 
 namespace Core.Settings.Services
@@ -21,15 +22,7 @@ namespace Core.Settings.Services
         /// </summary>
         /// <param name="rootDirectory"></param>
         /// <returns></returns>
-        public Task SetRootDirectoryAsync(string rootDirectory);
-
-        /// <summary>
-        /// Метод сборки действующий в проекте параметров конфигурации 
-        /// путем объединения конфигураций на уровне открытого проекта и глобального конфига.
-        /// Используется сервисом сборки запроса.
-        /// </summary>
-        /// <returns></returns>
-        public Task<CombinationConfig> GetCombinationConfigAsync();
+        public Task OpenProjectAsync(string rootDirectory);
 
         /// <summary>
         /// Метод чтения всех доступных в данный момент конфигураций (проектная - если открыт проект; глобальная).
@@ -37,7 +30,7 @@ namespace Core.Settings.Services
         /// Создает независимую копию данных (состояние не отслеживается).
         /// </summary>
         /// <returns></returns>
-        public Task<AllConfigDto> GetAllConfigAsync();
+        public Task<ConfigDto> GetConfigAsync();
 
         /// <summary>
         /// Метод сохранения конфигураций.
@@ -45,7 +38,7 @@ namespace Core.Settings.Services
         /// </summary>
         /// <param name="allConfig"></param>
         /// <returns></returns>
-        public Task SaveAllConfigAsync(AllConfigDto allConfig);
+        public Task SaveConfigAsync(ConfigDto allConfig);
 
         /// <summary>
         /// Метод получения заводского набора настроек.
@@ -53,35 +46,42 @@ namespace Core.Settings.Services
         /// Не меняет конфигурации сами по себе, а только создает копию.
         /// </summary>
         /// <returns></returns>
-        public AllConfigDto GetAllConfigDefault();
+        public ConfigDto GetDefaultConfig();
     }
 
     public class ConfigService : IConfigService
     {
         private readonly IConfigLoader _loader;
-        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _lock = new(1, 1);
 
-        private Config? _localConfig;
-        private readonly AsyncLazy<Config> _lazyGlobalConfig;
+        /// <summary>
+        /// Локальные настройки
+        /// </summary>
+        private LocalConfig? _LOCAL;
+        /// <summary>
+        /// Глобальные настройки
+        /// </summary>
+        private readonly AsyncLazy<GlobalConfig> _GLOBAL;
 
         public string RootDirectory { get; private set; } = string.Empty;
 
         public ConfigService(IConfigLoader loader)
         {
             _loader = loader;
-            _lazyGlobalConfig = new AsyncLazy<Config>(() => _loader.LoadGlobal());
+            _GLOBAL = new(() => _loader.LoadGlobal());
         }
 
-        public async Task<CombinationConfig> GetCombinationConfigAsync()
+        public async Task<ConfigDto> GetConfigAsync()
         {
             await _lock.WaitAsync();
             try
             {
-                var global = await _lazyGlobalConfig.GetValueAsync();
-                var local = _localConfig;
+                var global = await _GLOBAL.GetValueAsync();
 
-                var current = local ?? global ?? new Config();
-                return new CombinationConfig(current);
+                return new ConfigDto(
+                    new GlobalConfigDto(global),
+                    _LOCAL is null ? new LocalConfigDto() : new LocalConfigDto(_LOCAL)
+                    );
             }
             finally
             {
@@ -89,41 +89,22 @@ namespace Core.Settings.Services
             }
         }
 
-        public async Task<AllConfigDto> GetAllConfigAsync()
+        public async Task SaveConfigAsync(ConfigDto allConfig)
         {
             await _lock.WaitAsync();
             try
             {
-                var global = await _lazyGlobalConfig.GetValueAsync();
-
-                return new AllConfigDto()
-                {
-                    Global = new CombinationConfig(global ?? new Config()),
-                    Local = _localConfig != null ? new CombinationConfig(_localConfig) : new CombinationConfig(global ?? new Config())
-                };
-            }
-            finally
-            {
-                _lock.Release();
-            }
-        }
-
-        public async Task SaveAllConfigAsync(AllConfigDto allConfig)
-        {
-            await _lock.WaitAsync();
-            try
-            {
-                var globalConfig = new Config(allConfig.Global);
+                var globalConfig = new GlobalConfig(allConfig.Global);
                 await _loader.SaveGlobal(globalConfig);
 
                 // Сброс ленивой загрузки для глобальной конфигурации
-                _lazyGlobalConfig.Reset(globalConfig);
+                _GLOBAL.Reset(globalConfig);
 
                 if (allConfig.Local != null)
                 {
-                    var localConfig = new Config(allConfig.Local);
+                    var localConfig = new LocalConfig(allConfig.Local);
                     await _loader.SaveLocal(localConfig, RootDirectory);
-                    _localConfig = localConfig;
+                    _LOCAL = localConfig;
                 }
             }
             finally
@@ -132,13 +113,13 @@ namespace Core.Settings.Services
             }
         }
 
-        public async Task SetRootDirectoryAsync(string rootDirectory)
+        public async Task OpenProjectAsync(string rootDirectory)
         {
             await _lock.WaitAsync();
             try
             {
                 RootDirectory = rootDirectory;
-                _localConfig = await _loader.LoadLocal(RootDirectory);
+                _LOCAL = await _loader.LoadLocal(RootDirectory);
 
             }
             finally
@@ -147,9 +128,9 @@ namespace Core.Settings.Services
             }
         }
 
-        public AllConfigDto GetAllConfigDefault()
+        public ConfigDto GetDefaultConfig()
         {
-            return new AllConfigDto() { Global = new CombinationConfig(new Config()), Local = new CombinationConfig(new Config()) };
+            return new ConfigDto(new GlobalConfigDto(new GlobalConfig()), new LocalConfigDto(new LocalConfig()));
         }
     }
 }
