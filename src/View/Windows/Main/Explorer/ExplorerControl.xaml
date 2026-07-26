@@ -23,27 +23,27 @@
             <TreeView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Создать файл"
-                            Command="{Binding CreateFileCommand}"
+                            Command="{Binding ExplorerContextMenu.CreateFileCommand}"
                             CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                     <MenuItem Header="Создать каталог"
-                            Command="{Binding CreateFolderCommand}"
+                            Command="{Binding ExplorerContextMenu.CreateFolderCommand}"
                             CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                     <MenuItem Header="Удалить"
-                            Command="{Binding DeleteCommand}"
+                            Command="{Binding ExplorerContextMenu.DeleteCommand}"
                             CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                     <MenuItem Header="Переименовать"
-                            Command="{Binding RenameCommand}"
+                            Command="{Binding ExplorerContextMenu.RenameCommand}"
                             CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                     <MenuItem Header="Исключить глобально"
-                            Command="{Binding ExcludeGlobalCommand}"
+                            Command="{Binding ExplorerContextMenu.ExcludeGlobalCommand}"
                             CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                     <MenuItem Header="Исключить локально"
-                            Command="{Binding ExcludeLocalCommand}"
+                            Command="{Binding ExplorerContextMenu.ExcludeLocalCommand}"
                             CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                     <MenuItem Header="Создать выборку"
-                            Command="{Binding SelectionSaveAsCommand}" />
+                            Command="{Binding ExplorerContextMenu.SelectionSaveAsCommand}" />
                     <MenuItem Header="Обновить существующую выборку"
-                            Command="{Binding SelectionUpdateCommand}" />
+                            Command="{Binding ExplorerContextMenu.SelectionUpdateCommand}" />
                 </ContextMenu>
             </TreeView.ContextMenu>
 
