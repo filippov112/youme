@@ -227,13 +227,8 @@ namespace View.Windows.Selections
         {
             Task.Run(async () => { 
                 await _selectionService.SaveSelections(Selections.Select(x => new Core.Selections.Models.Selection() { Name = x.Name, Files = [.. x.Files.Select(y => y.Path)] }));
-
-                App.Current.Dispatcher.Invoke(() =>
-                {
-                    selectionsChanged = false;
-                    OnPropertyChanged(nameof(selectionsChanged));
-                });
             });
+            selectionsChanged = false;
         }
         public bool CanSave() => selectionsChanged;
         #endregion

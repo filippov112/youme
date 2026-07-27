@@ -68,7 +68,7 @@
                 
                 <explorer:ExplorerControl DataContext="{Binding ExplorerViewModel}"/>
 
-                <GridSplitter Grid.Row="1" Height="4"></GridSplitter>
+                <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"></GridSplitter>
 
                 <ListBox Grid.Row="2" ItemsSource="{Binding Selections}">
 
@@ -149,7 +149,7 @@
                     HorizontalAlignment="Left"
                     VerticalAlignment="Bottom" Margin="10,0,0,10" Grid.Row="1">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="170"/>
+                        <ColumnDefinition/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <Label Content="Примерное число токенов:" FontSize="14" FontWeight="Bold"/>
