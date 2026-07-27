@@ -1,5 +1,6 @@
 ﻿using Core.Explorer.Models;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 using View.Other;
 using View.Windows.Selections.Models;
 
@@ -7,8 +8,8 @@ namespace View.Windows.Selections.Explorer
 {
     public class ExplorerItemVM : ViewModel
     {
-        private ObservableCollection<FileVM> _files;
-        public ExplorerItemVM(ExplorerItemVM? parent, ProjectUnit elementDto, ObservableCollection<FileVM> files)
+        private ICommand ChangeSelectingStateCommand {  get; set; }
+        public ExplorerItemVM(ExplorerItemVM? parent, ProjectUnit elementDto, ICommand changeSelectingStateCommand)
         {
             Parent = parent;
             Name = elementDto.Name;
@@ -17,10 +18,9 @@ namespace View.Windows.Selections.Explorer
             Children = [];
             foreach (var item in elementDto.Children)
             {
-                Children.Add(new ExplorerItemVM(this, item, files));
+                Children.Add(new ExplorerItemVM(this, item, changeSelectingStateCommand));
             }
-
-            _files = files;
+            ChangeSelectingStateCommand = changeSelectingStateCommand;
         }
 
         public void GetSelectedFiles(HashSet<string> container)
@@ -63,28 +63,27 @@ namespace View.Windows.Selections.Explorer
             }
         }
 
-        public bool IsSelected // Элемент участвует в выборке
+        public bool IsSelected // Элемент участвует в выборке (выбор через дерево проекта)
         {
             get => _isSelected;
             set
             {
+                var oldValue = _isSelected;
                 _isSelected = value;
-                if (Type == ItemType.File && !_isSelected && value) // Add
-                {
-                    _files.Add(new() { Path = FullPath, Item = this });
-                }
-                else if (Type == ItemType.File && _isSelected && !value) // Delete
-                {
-                    var item = _files.FirstOrDefault(x => x.Path == FullPath);
-                    if (item is not null)
-                    {
-                        _files.Remove(item);
-                    }
-                }
+                if (Type == ItemType.File && ((!oldValue && value) || (oldValue && !value)))
+                    ChangeSelectingStateCommand.Execute(this);
+                
                 foreach (var item in Children)
                     item.IsSelected = value;
                 OnPropertyChanged();
             }
+        }
+        public void Select(bool val = true) // Элемент участвует в выборке (выбор через список файлов)
+        {
+            _isSelected = val;
+            foreach (var item in Children)
+                item.Select(val);
+            OnPropertyChanged(nameof(IsSelected));
         }
     }
     public enum ItemType

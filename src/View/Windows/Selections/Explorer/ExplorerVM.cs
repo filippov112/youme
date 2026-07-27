@@ -1,5 +1,6 @@
 ﻿using Core.Explorer.Models;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 using View.Other;
 using View.Windows.Selections.Models;
 
@@ -22,14 +23,32 @@ namespace View.Windows.Selections.Explorer
         /// Загрузка структуры проекта из файловой системы
         /// </summary>
         /// <param name="rootPath"></param>
-        public void LoadProject(ProjectUnit? rootElement, ObservableCollection<FileVM> files)
+        public void LoadProject(ProjectUnit? rootElement, ICommand changeSelectingStateCommand)
         {
             Items.Clear();
             if (rootElement == null)
                 return;
-            var rootItem = new ExplorerItemVM(null, rootElement, files);
+            var rootItem = new ExplorerItemVM(null, rootElement, changeSelectingStateCommand);
             Items.Add(rootItem);
+            IsEnabled = true;
             OnPropertyChanged();
+        }
+
+        private bool _isEnabled = false;
+        public bool IsEnabled
+        {
+            get => _isEnabled;
+            set
+            {
+                _isEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public void Clear()
+        {
+            Items.Clear();
+            IsEnabled = false;
         }
     }
 }

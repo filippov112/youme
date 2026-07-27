@@ -9,8 +9,17 @@ namespace View.Windows.Selections.Models
 {
     public class SelectionVM: ViewModel
     {
+        private string _name = string.Empty;
         public ICommand SelectCommand { get; set; }
-        public string Name { get; set; } = string.Empty;
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                _name = value;
+                OnPropertyChanged();
+            }
+        }
 
         public ObservableCollection<FileVM> Files { get; private set; } = [];
 

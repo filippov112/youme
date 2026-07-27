@@ -29,7 +29,7 @@ namespace View.Windows.Selections
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            if (_vm.OnCloced())
+            if (_vm.ApproveClosing())
                 base.OnClosing(e);
             else
                 e.Cancel = true;

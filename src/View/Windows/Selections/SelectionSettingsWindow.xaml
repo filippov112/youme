@@ -4,9 +4,143 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:View.Windows.Selections"
+        xmlns:exp="clr-namespace:View.Windows.Selections.Explorer"
         mc:Ignorable="d"
-        Title="SelectionSettingsWindow" Height="450" Width="800">
+        Title="Настройка выборок" Height="600" Width="1100">
     <Grid>
-        
+        <Grid.Background>
+            <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
+        </Grid.Background>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Левая панель -->
+        <Grid>
+            <Grid.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
+            </Grid.Background>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Label>Выборки:</Label>
+            <ListBox Grid.Row="1" ItemsSource="{Binding Selections}" SelectedItem="{Binding SelectedSelection}">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Label Content="{Binding Name}" HorizontalAlignment="Left" FontSize="14"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label Padding="5,5,5,1">Название выборки:</Label>
+                <TextBox Grid.Row="1" Grid.ColumnSpan="2" Padding="4,4,4,4" Margin="2,2,2,1" Text="{Binding CurrentSelectionName}"/>
+                <Button Grid.Row="2" Grid.ColumnSpan="2" Padding="4,4,4,4" Margin="2,1,2,1" Command="{Binding RenameSelectionCommand}">Переименовать</Button>
+                <Button Grid.Row="3" Padding="4,4,4,4" Margin="2,1,2,2" Command="{Binding CreateSelectionCommand}">Создать</Button>
+                <Button Grid.Row="3" Grid.Column="1" Padding="4,4,4,4" Margin="2,1,2,2" Command="{Binding DeleteSelectionCommand}">Удалить</Button>
+            </Grid>
+        </Grid>
+
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch">
+            <GridSplitter.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveBorderColorKey}}"/>
+            </GridSplitter.Background>
+        </GridSplitter>
+
+        <!-- Центральная панель -->
+        <Grid Grid.Column="2">
+            <Grid.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
+            </Grid.Background>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Label>Список файлов в выборке:</Label>
+            <ListBox Grid.Row="1" ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedFilePath}">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Label Content="{Binding Path}" FontSize="12" Background="{Binding IsExist}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label Padding="5,5,5,1">Путь:</Label>
+                <TextBox Grid.Row="1" Grid.ColumnSpan="2" Padding="4,4,4,4" Margin="2,2,2,1" Text="{Binding CurrentFilePath}"/>
+                <Button Grid.Row="2" Grid.ColumnSpan="2" Padding="4,4,4,4" Margin="2,1,2,1" Command="{Binding ChangeFilePathCommand}">Изменить</Button>
+                <Button Grid.Row="3" Padding="4,4,4,4" Margin="2,1,2,2" Command="{Binding CreateFilePathCommand}">Добавить</Button>
+                <Button Grid.Row="3" Grid.Column="1" Padding="4,4,4,4" Margin="2,1,2,2" Command="{Binding DeleteFilePathCommand}">Удалить</Button>
+            </Grid>
+        </Grid>
+
+        <GridSplitter Grid.Column="3" Width="5" HorizontalAlignment="Stretch">
+            <GridSplitter.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveBorderColorKey}}"/>
+            </GridSplitter.Background>
+        </GridSplitter>
+
+        <!-- Правая панель -->
+        <Grid Grid.Column="4">
+            <Grid.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
+            </Grid.Background>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Label>Дерево проекта:</Label>
+            <exp:ExplorerControl Grid.Row="1" DataContext="{Binding ExplorerViewModel}"/>
+        </Grid>
+
+        <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Grid.Row="1" Grid.ColumnSpan="5">
+            <Button Padding="6" Margin="8" Background="#FFBDFD74" Command="{Binding SaveCommand}">Сохранить</Button>
+        </StackPanel>
     </Grid>
 </Window>

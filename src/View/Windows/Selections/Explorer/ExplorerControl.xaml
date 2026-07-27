@@ -11,7 +11,8 @@
                   Grid.Row="1"
                   ItemsSource="{Binding Items}"
                   Background="#FFF3F3F3"
-                  Padding="6,6,6,6">
+                  Padding="6,6,6,6"
+                  IsEnabled="{Binding IsEnabled}">
 
             <TreeView.ItemContainerStyle>
                 <Style TargetType="{x:Type TreeViewItem}">
