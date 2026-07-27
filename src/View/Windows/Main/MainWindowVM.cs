@@ -2,15 +2,21 @@
 using Core.DocsManager.Services;
 using Core.Explorer.Services;
 using Core.PromptBuilder.Service;
+using Core.Selections.Models;
+using Core.Selections.Services;
 using Core.Settings.Services;
 using Core.Tools;
 using ICSharpCode.AvalonEdit.Highlighting;
+using Inf.Selections;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using View.Other;
 using View.Services;
 using View.Windows.Main.Editor;
 using View.Windows.Main.Explorer;
 using View.Windows.Main.RecentProjects;
+using View.Windows.Main.Selections.Models;
+using View.Windows.Selections;
 using View.Windows.Settings;
 
 namespace View.Windows.Main
@@ -26,6 +32,7 @@ namespace View.Windows.Main
         private readonly IBufferExchangeTool _bufferExchangeTool;
         private readonly ICatalogObserver _catalogObserver;
         private readonly IDocsService _docsService;
+        private readonly ISelectionService _selectionService;
 
         private readonly ICatalogChangeEvent _catalogChangeEvent; // Событие изменения в каталоге
 
@@ -43,7 +50,8 @@ namespace View.Windows.Main
             ICatalogChangeEvent catalogChangeEvent,
             ICatalogObserver catalogObserver,
             ICatalogJsonProcessor catalogJsonProcessor,
-            IDocsService docsService
+            IDocsService docsService,
+            ISelectionService selectionService
             )
         {
             EditorViewModel = editor;
@@ -59,6 +67,7 @@ namespace View.Windows.Main
             _tokenCounterTool = tokenCounterService;
             _catalogJsonProcessor = catalogJsonProcessor;
             _docsService = docsService;
+            _selectionService = selectionService;
 
             ExplorerViewModel.OpenFile = async path => { await OpenDocument(path); };
 
@@ -72,12 +81,14 @@ namespace View.Windows.Main
             BuildContextCommand = new RelayCommand(BuildContext, () => _configService.ProjectOpened);
             BuildStructCommand = new RelayCommand(BuildStruct, () => _configService.ProjectOpened);
             PasteDocsCommand = new RelayCommand(PastDocs, () => _configService.ProjectOpened);
+            OpenSelectionsCommand = new RelayCommand(OpenSelectionSettingsWindow, () => _configService.ProjectOpened);
         }
 
         private void OnProjectOpened(object? sender, ProjectOpenedEventArgs e)
         {
             // Открываем проект
             OpenProject(e.ProjectPath);
+            //LoadSelections();
         }
 
         private void OnCatalogChanged()
@@ -181,6 +192,7 @@ namespace View.Windows.Main
             if (rootPath == null)
                 return;
             OpenProject(rootPath);
+            //LoadSelections();
         }
 
         private void OpenProject(string rootPath)
@@ -191,6 +203,7 @@ namespace View.Windows.Main
             {
                 await _configService.OpenProjectAsync(rootPath);
                 var tree = await _fileSystemService.GetTreeAsync();
+                
                 App.Current.Dispatcher.Invoke(() =>
                 {
                     ExplorerViewModel.ClearTreeState();
@@ -201,6 +214,7 @@ namespace View.Windows.Main
                     // Добавляем в список последних
                     RecentProjectsViewModel.AddRecentProject(rootPath, name);
                 });
+                LoadSelections();
             });
         }
 
@@ -217,6 +231,34 @@ namespace View.Windows.Main
         {
             EditorViewModel.Text = await _fileSystemService.ReadFileAsync(path);
             EditorViewModel.SetHighlight(path);
+        }
+        #endregion
+
+        #region Selections
+        public ObservableCollection<SelectionVM> Selections { get; private set; } = [];
+        public ICommand OpenSelectionsCommand { get; private set; }
+        private void LoadSelections()
+        {
+            var items = new List<ExplorerItemVM>();
+            if (ExplorerViewModel.Items.Count > 0)
+                ExplorerViewModel.Items[0].GetFiles(items);
+
+            Task.Run(async () =>
+            {
+                var list = await _selectionService.GetSelections();
+                ObservableCollection<SelectionVM> vms = new(list.Select(x => new SelectionVM(x.Name, x.Files, new(items))));
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    Selections = new(vms);
+                    OnPropertyChanged(nameof(Selections));
+                });
+            });
+        }
+        private void OpenSelectionSettingsWindow(object? sender)
+        {
+            var window = new SelectionSettingsWindow(new SelectionSettingsWindowVM(_selectionService, _dialogService, _fileSystemService));
+            window.ShowDialog();
+            LoadSelections();
         }
         #endregion
 

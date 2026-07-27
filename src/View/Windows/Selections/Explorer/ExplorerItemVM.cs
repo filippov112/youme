@@ -1,12 +1,14 @@
 ﻿using Core.Explorer.Models;
 using System.Collections.ObjectModel;
 using View.Other;
+using View.Windows.Selections.Models;
 
-namespace View.Windows.Main.Explorer
+namespace View.Windows.Selections.Explorer
 {
     public class ExplorerItemVM : ViewModel
     {
-        public ExplorerItemVM(ExplorerItemVM? parent, ProjectUnit elementDto)
+        private ObservableCollection<FileVM> _files;
+        public ExplorerItemVM(ExplorerItemVM? parent, ProjectUnit elementDto, ObservableCollection<FileVM> files)
         {
             Parent = parent;
             Name = elementDto.Name;
@@ -15,8 +17,10 @@ namespace View.Windows.Main.Explorer
             Children = [];
             foreach (var item in elementDto.Children)
             {
-                Children.Add(new ExplorerItemVM(this, item));
+                Children.Add(new ExplorerItemVM(this, item, files));
             }
+
+            _files = files;
         }
 
         public void GetSelectedFiles(HashSet<string> container)
@@ -38,32 +42,10 @@ namespace View.Windows.Main.Explorer
             IsExpanded = true;
             Parent?.Expand();
         }
-        public void GetExpandedDirectories(HashSet<string> container)
-        {
-            if (IsExpanded)
-                container.Add(FullPath);
-            foreach (var item in Children)
-                item.GetExpandedDirectories(container);
-        }
-        public void RestoreSelectedState(HashSet<string> paths)
-        {
-            if (paths.Contains(FullPath))
-                IsSelected = true;
-            foreach (var item in Children)
-                item.RestoreSelectedState(paths);
-        }
-        public void RestoreExpandedState(HashSet<string> paths)
-        {
-            if (paths.Contains(FullPath))
-                IsExpanded = true;
-            foreach (var item in Children)
-                item.RestoreExpandedState(paths);
-        }
+
 
         private bool _isExpanded;
         private bool _isSelected;
-        private bool _isFocused;
-        private bool _isDepended;
 
         public ItemType Type { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -81,32 +63,26 @@ namespace View.Windows.Main.Explorer
             }
         }
 
-        public bool IsDepended
-        {
-            get => _isDepended;
-            set
-            {
-                _isDepended = value;
-                OnPropertyChanged();
-            }
-        }
-        public bool IsSelected // Элемент выбран для парсинга
+        public bool IsSelected // Элемент участвует в выборке
         {
             get => _isSelected;
             set
             {
                 _isSelected = value;
+                if (Type == ItemType.File && !_isSelected && value) // Add
+                {
+                    _files.Add(new() { Path = FullPath, Item = this });
+                }
+                else if (Type == ItemType.File && _isSelected && !value) // Delete
+                {
+                    var item = _files.FirstOrDefault(x => x.Path == FullPath);
+                    if (item is not null)
+                    {
+                        _files.Remove(item);
+                    }
+                }
                 foreach (var item in Children)
                     item.IsSelected = value;
-                OnPropertyChanged();
-            }
-        }
-        public bool IsFocused // Элемент отображается в редакторе
-        {
-            get => _isFocused;
-            set
-            {
-                _isFocused = value;
                 OnPropertyChanged();
             }
         }
