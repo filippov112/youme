@@ -1,6 +1,5 @@
 ﻿using Core.Explorer.Services;
 using Core.PromptBuilder.Service;
-using Core.Settings.Models;
 using Core.Settings.Models.DTO;
 using Core.Settings.Services;
 using Moq;
@@ -17,16 +16,11 @@ namespace ProjectStudio.Test.Unit
             {
                 Local = new()
                 {
-                    IntroductionKey = "##intro##",
                     ContextKey = "##context##",
-                    RulesKey = "##rules##",
                     QueryKey = "##query##",
                     FilePathKey = "##path##",
                     FileContentKey = "##content##",
-                    PromptStructure = "##intro##\n```\n##context##\n```\n##query##\n\n##rules##",
                     FileStructure = "Файл: ##path##\n```\n##content##\n```",
-                    IntroductionText = "Ты - ассистент программиста",
-                    RulesText = "Отвечай на русском языке"
                 }
             };
 
@@ -45,7 +39,7 @@ namespace ProjectStudio.Test.Unit
                 .ReturnsAsync("public static class Utils { public static void Helper() { } }");
 
             // Создаем тестируемый сервис
-            var builder = new PromptService(mockConfig.Object, mockFs.Object);
+            var builder = new PromptService(mockConfig.Object, mockFs.Object, null, null);
 
             // Act - вызываем метод сборки промпта
             var files = new List<string> { "/project/Program.cs", "/project/Utils.cs" };
@@ -54,9 +48,7 @@ namespace ProjectStudio.Test.Unit
 
             // Assert - проверяем результат
             // 1. Проверяем наличие всех частей промпта
-            Assert.Contains("Ты - ассистент программиста", result); // Вступление
             Assert.Contains("Что делает этот код?", result);         // Запрос
-            Assert.Contains("Отвечай на русском языке", result);     // Правила
 
             // 2. Проверяем, что оба файла добавлены
             Assert.Contains("/project/Program.cs", result);

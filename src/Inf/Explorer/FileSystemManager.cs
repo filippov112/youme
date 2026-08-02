@@ -1,19 +1,31 @@
 ﻿using Core.Explorer.Models;
 using Core.Explorer.Services;
 using Core.Settings.Services;
+using Inf.Constants;
 using Inf.FileSystem;
 
 namespace Inf.Explorer
 {
     public class FileSystemManager(
-        IFileSystemWrapper fileSystemWrapper, 
-        IDirectoryInfoWrapper factory, 
+        IFileSystemWrapper fileSystemWrapper,
+        IDirectoryInfoWrapper factory,
+        IFileSystemConstants constants,
         IConfigService config) : IFileSystemService
     {
         public async Task<string> ReadFileAsync(string path)
         {
             return await fileSystemWrapper.FileReadAsync(path);
         }
+
+        public async Task<List<string>> GetFilesAsync()
+        {
+            var node = await GetTreeAsync();
+            List<string> container = [];
+            if (node is not null)
+                AddFiles(node, container);
+            return container;
+        }
+
         public async Task WriteFileAsync(string path, string content)
         {
             var directory = fileSystemWrapper.GetDirectoryName(path);
@@ -60,6 +72,14 @@ namespace Inf.Explorer
                 throw new FileNotFoundException($"Path not found: {oldPath}");
         }
         #region Private
+        private void AddFiles(ProjectUnit unit, List<string> container)
+        {
+            if (unit.IsDirectory)
+                foreach (var child in unit.Children)
+                    AddFiles(child, container);
+            else
+                container.Add(unit.RelativePath);
+        }
         private Task DeleteFileAsync(string path)
         {
             fileSystemWrapper.FileDelete(path);
@@ -87,6 +107,7 @@ namespace Inf.Explorer
             {
                 Name = info.Name,
                 Path = path,
+                RelativePath = Path.GetRelativePath(constants.LocalFolderName, path),
                 Parent = parent,
                 IsDirectory = info.IsDirectory
             };

@@ -1,6 +1,4 @@
-﻿using System.Windows.Controls;
-
-namespace View.Windows.Main.Editor
+﻿namespace View.Windows.Main.Editor
 {
     /// <summary>
     /// Логика взаимодействия для EditorControl.xaml

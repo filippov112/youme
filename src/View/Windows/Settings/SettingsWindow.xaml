@@ -75,7 +75,7 @@
 
             <!-- Глобальная конфигурация -->
             <ScrollViewer Grid.Row="1" 
-                         Visibility="{Binding IsGlobalSelected, Converter={StaticResource BooleanToVisibilityConverter}}" Padding="5,5,5,5">
+                         Visibility="{Binding IsGlobalSelected, Converter={StaticResource BooleanToVisibilityConverter}}" Padding="5,5,5,5" d:IsHidden="True">
                 <StackPanel>
 
                     <GroupBox Header="Инициализация проекта" Margin="0,0,0,15">
@@ -97,24 +97,16 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                <TextBlock Text="Ключ введения:" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding GlobalConfig.IntroductionKey, UpdateSourceTrigger=PropertyChanged}" 
-                                        Margin="0,0,0,10"/>
-
                                 <TextBlock Text="Ключ контекста:" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding GlobalConfig.ContextKey, UpdateSourceTrigger=PropertyChanged}" 
                                         Margin="0,0,0,10"/>
 
-                                <TextBlock Text="Ключ правил:" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding GlobalConfig.RulesKey, UpdateSourceTrigger=PropertyChanged}" 
+                                <TextBlock Text="Ключ запроса:" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding GlobalConfig.QueryKey, UpdateSourceTrigger=PropertyChanged}" 
                                         Margin="0,0,0,10"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                                <TextBlock Text="Ключ запроса:" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding GlobalConfig.QueryKey, UpdateSourceTrigger=PropertyChanged}" 
-                                        Margin="0,0,0,10"/>
-
                                 <TextBlock Text="Ключ пути файла:" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding GlobalConfig.FilePathKey, UpdateSourceTrigger=PropertyChanged}" 
                                         Margin="0,0,0,10"/>
@@ -126,39 +118,18 @@
                         </Grid>
                     </GroupBox>
 
-                    <GroupBox Header="Структуры" Margin="0,0,0,15">
-                        <StackPanel>
-                            <TextBlock Text="Структура промпта:" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding GlobalConfig.PromptStructure, UpdateSourceTrigger=PropertyChanged}" 
-                                    Height="200" TextWrapping="Wrap" AcceptsReturn="True" 
-                                    VerticalScrollBarVisibility="Auto" Margin="0,0,0,10"/>
-
-                            <TextBlock Text="Структура файла:" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding GlobalConfig.FileStructure, UpdateSourceTrigger=PropertyChanged}" 
-                                    Height="200" TextWrapping="Wrap" AcceptsReturn="True" 
-                                    VerticalScrollBarVisibility="Auto"/>
-                        </StackPanel>
-                    </GroupBox>
-
-                    <GroupBox Header="Значения по умолчанию" Margin="0,0,0,15">
-                        <StackPanel>
-                            <TextBlock Text="Текст введения:" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding GlobalConfig.IntroductionText, UpdateSourceTrigger=PropertyChanged}" 
-                                    Height="200" TextWrapping="Wrap" AcceptsReturn="True" 
-                                    VerticalScrollBarVisibility="Auto" Margin="0,0,0,10"/>
-
-                            <TextBlock Text="Текст правил:" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding GlobalConfig.RulesText, UpdateSourceTrigger=PropertyChanged}" 
-                                    Height="200" TextWrapping="Wrap" AcceptsReturn="True" 
-                                    VerticalScrollBarVisibility="Auto"/>
-                        </StackPanel>
-                    </GroupBox>
+       
+                    <TextBlock Text="Структура файла:" Margin="5,0,5,5"/>
+                    <TextBox Text="{Binding GlobalConfig.FileStructure, UpdateSourceTrigger=PropertyChanged}" 
+                            Height="200" TextWrapping="Wrap" AcceptsReturn="True" 
+                            VerticalScrollBarVisibility="Auto" Margin="5,0,5,15"/>
+                    
                 </StackPanel>
             </ScrollViewer>
 
             <!-- Проектная конфигурация -->
             <ScrollViewer Grid.Row="1" 
-                         Visibility="{Binding IsLocalSelected, Converter={StaticResource BooleanToVisibilityConverter}}" d:IsHidden="True">
+                         Visibility="{Binding IsLocalSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel>
                     <GroupBox Header="Ключи замены" Margin="0,0,0,15">
                         <Grid>
@@ -168,24 +139,16 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                <TextBlock Text="Ключ введения:" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding LocalConfig.IntroductionKey, UpdateSourceTrigger=PropertyChanged}" 
-                                        Margin="0,0,0,10"/>
-
                                 <TextBlock Text="Ключ контекста:" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding LocalConfig.ContextKey, UpdateSourceTrigger=PropertyChanged}" 
                                         Margin="0,0,0,10"/>
-
-                                <TextBlock Text="Ключ правил:" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding LocalConfig.RulesKey, UpdateSourceTrigger=PropertyChanged}" 
+                                
+                                <TextBlock Text="Ключ запроса:" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding LocalConfig.QueryKey, UpdateSourceTrigger=PropertyChanged}" 
                                         Margin="0,0,0,10"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                                <TextBlock Text="Ключ запроса:" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding LocalConfig.QueryKey, UpdateSourceTrigger=PropertyChanged}" 
-                                        Margin="0,0,0,10"/>
-
                                 <TextBlock Text="Ключ пути файла:" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding LocalConfig.FilePathKey, UpdateSourceTrigger=PropertyChanged}" 
                                         Margin="0,0,0,10"/>
@@ -197,33 +160,11 @@
                         </Grid>
                     </GroupBox>
 
-                    <GroupBox Header="Структуры" Margin="0,0,0,15">
-                        <StackPanel>
-                            <TextBlock Text="Структура промпта:" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding LocalConfig.PromptStructure, UpdateSourceTrigger=PropertyChanged}" 
-                                    Height="200" TextWrapping="Wrap" AcceptsReturn="True" 
-                                    VerticalScrollBarVisibility="Auto" Margin="0,0,0,10"/>
-
-                            <TextBlock Text="Структура файла:" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding LocalConfig.FileStructure, UpdateSourceTrigger=PropertyChanged}" 
-                                    Height="200" TextWrapping="Wrap" AcceptsReturn="True" 
-                                    VerticalScrollBarVisibility="Auto"/>
-                        </StackPanel>
-                    </GroupBox>
-
-                    <GroupBox Header="Значения по умолчанию" Margin="0,0,0,15">
-                        <StackPanel>
-                            <TextBlock Text="Текст введения:" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding LocalConfig.IntroductionText, UpdateSourceTrigger=PropertyChanged}" 
-                                    Height="60" TextWrapping="Wrap" AcceptsReturn="True" 
-                                    VerticalScrollBarVisibility="Auto" Margin="0,0,0,10"/>
-
-                            <TextBlock Text="Текст правил:" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding LocalConfig.RulesText, UpdateSourceTrigger=PropertyChanged}" 
-                                    Height="60" TextWrapping="Wrap" AcceptsReturn="True" 
-                                    VerticalScrollBarVisibility="Auto"/>
-                        </StackPanel>
-                    </GroupBox>
+                    <TextBlock Text="Структура файла:" Margin="5,0,5,5"/>
+                    <TextBox Text="{Binding LocalConfig.FileStructure, UpdateSourceTrigger=PropertyChanged}" 
+                            Height="200" TextWrapping="Wrap" AcceptsReturn="True" 
+                            VerticalScrollBarVisibility="Auto" Margin="5,0,5,15"/>
+                    
                 </StackPanel>
             </ScrollViewer>
         </Grid>

@@ -10,5 +10,6 @@ namespace Core.Explorer.Services
         Task CreateDirectoryAsync(string path);
         Task DeleteAsync(string path);
         Task ChangePathAsync(string oldPath, string newName);
+        Task<List<string>> GetFilesAsync();
     }
 }

@@ -79,7 +79,7 @@ public class CatalogJsonProcessor(IFileSystemService fileSystemService) : ICatal
         return null;
     }
 
-    
+
     /// <summary>
     /// Кастомный конвертер для сериализации в нужном формате
     /// </summary>
@@ -147,7 +147,7 @@ public class CatalogJsonProcessor(IFileSystemService fileSystemService) : ICatal
             {
                 result[kvp.Key] = kvp.Value; // Новый элемент
                 continue;
-            }    
+            }
 
             // Рекурсивно объединяем
             if (kvp.Value is JsonElement structElem && source[kvp.Key] is JsonElement sourceElem)

@@ -1,7 +1,4 @@
 ﻿using Core.Selections.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Core.Selections.Services
 {

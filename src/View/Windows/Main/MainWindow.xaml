@@ -43,6 +43,14 @@
             <MenuItem
                 Header="Выборки"
                 Command="{Binding OpenSelectionsCommand}" Padding="6,4,6,4"/>
+
+            <MenuItem
+                Header="Компоновки сборки"
+                Command="{Binding OpenLayoutsCommand}" Padding="6,4,6,4"/>
+
+            <MenuItem
+                Header="Файловые компоненты"
+                Command="{Binding OpenFileComponentsCommand}" Padding="6,4,6,4"/>
         </Menu>
 
         <Grid Grid.Row="1">
@@ -70,23 +78,58 @@
 
                 <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"></GridSplitter>
 
-                <ListBox Grid.Row="2" ItemsSource="{Binding Selections}">
+                <TabControl Grid.Row="2">
+                    
+                    <TabItem Header="Выборки">
+                        <ListBox ItemsSource="{Binding Selections}">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListBoxItem}">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
 
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="{x:Type ListBoxItem}">
-                            <Setter Property="Padding" Value="0"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Command="{Binding SelectCommand}" Padding="3,3,3,3" HorizontalContentAlignment="Left">
+                                        <Label Content="{Binding Name}" HorizontalAlignment="Left" FontSize="14"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </TabItem>
+                    
+                    <TabItem Header="Компоновки">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            
+                            <StackPanel Orientation="Horizontal" Margin="4,4,4,4">
+                                <CheckBox Content="Общие" IsChecked="{Binding CommonLayoutsVisible}"/>
+                                <CheckBox Content="Проектные" IsChecked="{Binding ProjectLayoutsVisible}" Margin="6,0,0,0"/>
+                            </StackPanel>
+                            
+                            <ListBox ItemsSource="{Binding Layouts}" Grid.Row="1" SelectedItem="{Binding SelectedLayout}">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="{x:Type ListBoxItem}">
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
 
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Button Command="{Binding SelectCommand}" Padding="3,3,3,3" HorizontalContentAlignment="Left">
-                                <Label Content="{Binding Name}" HorizontalAlignment="Left" FontSize="14"/>
-                            </Button>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Label Content="{Binding Name}" HorizontalAlignment="Left" FontSize="14"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                        
+                    </TabItem>
+                    
+                </TabControl>
                 
                 <StackPanel Grid.Row="3">
                     <StackPanel.Background>

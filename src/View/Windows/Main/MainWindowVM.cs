@@ -1,17 +1,20 @@
 ﻿using Core.CatalogParser.Services;
 using Core.DocsManager.Services;
 using Core.Explorer.Services;
+using Core.Layouts.DTO;
+using Core.Layouts.Services;
 using Core.PromptBuilder.Service;
-using Core.Selections.Models;
 using Core.Selections.Services;
 using Core.Settings.Services;
 using Core.Tools;
 using ICSharpCode.AvalonEdit.Highlighting;
-using Inf.Selections;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using View.Other;
 using View.Services;
+using View.Windows.FileComponents;
+using View.Windows.Layouts;
+using View.Windows.Layouts.Models;
 using View.Windows.Main.Editor;
 using View.Windows.Main.Explorer;
 using View.Windows.Main.RecentProjects;
@@ -33,6 +36,8 @@ namespace View.Windows.Main
         private readonly ICatalogObserver _catalogObserver;
         private readonly IDocsService _docsService;
         private readonly ISelectionService _selectionService;
+        private readonly ILayoutService _layoutService;
+        private readonly IFileComponentService _fileComponentService;
 
         private readonly ICatalogChangeEvent _catalogChangeEvent; // Событие изменения в каталоге
 
@@ -51,8 +56,10 @@ namespace View.Windows.Main
             ICatalogObserver catalogObserver,
             ICatalogJsonProcessor catalogJsonProcessor,
             IDocsService docsService,
-            ISelectionService selectionService
-            )
+            ISelectionService selectionService,
+            ILayoutService layoutService,
+            IFileComponentService fileComponentService
+        )
         {
             EditorViewModel = editor;
             ExplorerViewModel = explorer;
@@ -68,6 +75,8 @@ namespace View.Windows.Main
             _catalogJsonProcessor = catalogJsonProcessor;
             _docsService = docsService;
             _selectionService = selectionService;
+            _layoutService = layoutService;
+            _fileComponentService = fileComponentService;
 
             ExplorerViewModel.OpenFile = async path => { await OpenDocument(path); };
 
@@ -82,6 +91,10 @@ namespace View.Windows.Main
             BuildStructCommand = new RelayCommand(BuildStruct, () => _configService.ProjectOpened);
             PasteDocsCommand = new RelayCommand(PastDocs, () => _configService.ProjectOpened);
             OpenSelectionsCommand = new RelayCommand(OpenSelectionSettingsWindow, () => _configService.ProjectOpened);
+            OpenLayoutsCommand = new RelayCommand(OpenLayoutSettingsWindow);
+            OpenFileComponentsCommand = new RelayCommand(OpenFileComponentsSettingsWindow, () => _configService.ProjectOpened);
+
+            LoadLayouts();
         }
 
         private void OnProjectOpened(object? sender, ProjectOpenedEventArgs e)
@@ -100,6 +113,64 @@ namespace View.Windows.Main
                 OnPropertyChanged();
             });
         }
+
+        #region Layouts
+        public ObservableCollection<LayoutVM> Layouts { get; private set; } = [];
+        public ICommand OpenLayoutsCommand { get; private set; }
+        public ICommand OpenFileComponentsCommand { get; private set; }
+
+        private LayoutVM? _sl;
+        public LayoutVM? SelectedLayout
+        {
+            get => _sl;
+            set
+            {
+                _sl = value;
+                if (value != null)
+                    Task.Run(async () => { await _layoutService.ChangeActiveLayout(value.ID); });
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _clv = true, _plv = true;
+        public bool CommonLayoutsVisible
+        {
+            get => _clv;
+            set { _clv = value; LoadLayouts(); OnPropertyChanged(); }
+        }
+        public bool ProjectLayoutsVisible
+        {
+            get => _plv;
+            set { _plv = value; LoadLayouts(); OnCatalogChanged(); }
+        }
+
+        private void LoadLayouts()
+        {
+            SelectedLayout = null;
+            Task.Run(async () =>
+            {
+                List<LayoutDto> list = await _layoutService.GetLayouts(_clv, _plv);
+                ObservableCollection<LayoutVM> vms = new(list.Select(x => new LayoutVM(x)));
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    Layouts = vms;
+                    OnPropertyChanged(nameof(Layouts));
+                    SelectedLayout = Layouts.FirstOrDefault(x => x.ID == _layoutService.ActiveLayoutID);
+                });
+            });
+        }
+        private void OpenLayoutSettingsWindow(object? sender)
+        {
+            var window = new LayoutSettingsWindow(new LayoutSettingsWindowVM(_layoutService, _dialogService, _fileComponentService, _configService));
+            window.ShowDialog();
+            LoadLayouts();
+        }
+        private void OpenFileComponentsSettingsWindow(object? sender)
+        {
+            var window = new FileComponentsWindow(new FileComponentsWindowVM(_fileComponentService, _dialogService, _fileSystemService));
+            window.ShowDialog();
+        }
+        #endregion
 
         #region Editor
         public EditorVM EditorViewModel { get; private set; }
@@ -165,7 +236,7 @@ namespace View.Windows.Main
                 {
                     includeFiles = [.. files.Union(ExplorerViewModel.SelectedFiles)];
                 }
-                
+
                 var text = await _catalogJsonProcessor.ParseDirectoryToJson(includeFiles);
                 if (!string.IsNullOrEmpty(Query))
                     text = _catalogJsonProcessor.MergeJsonStructures(Query, text);
@@ -203,7 +274,7 @@ namespace View.Windows.Main
             {
                 await _configService.OpenProjectAsync(rootPath);
                 var tree = await _fileSystemService.GetTreeAsync();
-                
+
                 App.Current.Dispatcher.Invoke(() =>
                 {
                     ExplorerViewModel.ClearTreeState();
@@ -215,6 +286,7 @@ namespace View.Windows.Main
                     RecentProjectsViewModel.AddRecentProject(rootPath, name);
                 });
                 LoadSelections();
+                LoadLayouts();
             });
         }
 
@@ -237,6 +309,7 @@ namespace View.Windows.Main
         #region Selections
         public ObservableCollection<SelectionVM> Selections { get; private set; } = [];
         public ICommand OpenSelectionsCommand { get; private set; }
+
         private void LoadSelections()
         {
             var items = new List<ExplorerItemVM>();
@@ -259,6 +332,7 @@ namespace View.Windows.Main
             var window = new SelectionSettingsWindow(new SelectionSettingsWindowVM(_selectionService, _dialogService, _fileSystemService));
             window.ShowDialog();
             LoadSelections();
+            LoadLayouts();
         }
         #endregion
 
@@ -266,12 +340,14 @@ namespace View.Windows.Main
         public ICommand PasteDocsCommand { get; private set; }
         private void PastDocs(object? sender)
         {
-            Task.Run(async () => {
+            Task.Run(async () =>
+            {
                 try
                 {
                     await _docsService.PasteDocsCatalog();
                 }
-                catch(Exception ex) {
+                catch (Exception ex)
+                {
                     App.Current.Dispatcher.Invoke(() =>
                     {
                         _dialogService.ShowError(ex.Message);

@@ -13,7 +13,7 @@
         /// Глобальная конфигурация приложения.
         /// </summary>
         public GlobalConfigDto Global { get; set; } = new();
-    
+
         public ConfigDto(GlobalConfig globalConfig, LocalConfig localConfig)
         {
             Global = new(globalConfig);
@@ -23,7 +23,7 @@
         /// <summary>
         /// Для тестов
         /// </summary>
-        public ConfigDto() 
+        public ConfigDto()
         {
             Local = new();
         }

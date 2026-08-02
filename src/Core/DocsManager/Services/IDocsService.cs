@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Core.DocsManager.Services
+﻿namespace Core.DocsManager.Services
 {
     public interface IDocsService
     {

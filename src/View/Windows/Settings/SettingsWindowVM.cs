@@ -1,9 +1,7 @@
-﻿using Core.Settings.Models;
-using Core.Settings.Models.DTO;
+﻿using Core.Settings.Models.DTO;
 using Core.Settings.Services;
 using System.Windows;
 using System.Windows.Input;
-using System.Xml.Linq;
 using View.Other;
 using View.Services;
 
@@ -223,16 +221,11 @@ namespace View.Windows.Settings
             if (a == null && b == null) return true;
             if (a == null || b == null) return false;
 
-            return a.IntroductionKey == b.IntroductionKey &&
-                   a.ContextKey == b.ContextKey &&
-                   a.RulesKey == b.RulesKey &&
+            return a.ContextKey == b.ContextKey &&
                    a.QueryKey == b.QueryKey &&
                    a.FilePathKey == b.FilePathKey &&
                    a.FileContentKey == b.FileContentKey &&
-                   a.PromptStructure == b.PromptStructure &&
-                   a.FileStructure == b.FileStructure &&
-                   a.IntroductionText == b.IntroductionText &&
-                   a.RulesText == b.RulesText;
+                   a.FileStructure == b.FileStructure;
         }
 
         private static bool CompareGlobalConfigs(GlobalConfigDto a, GlobalConfigDto b)
@@ -240,17 +233,12 @@ namespace View.Windows.Settings
             if (a == null && b == null) return true;
             if (a == null || b == null) return false;
 
-            return a.IntroductionKey == b.IntroductionKey &&
-                   a.ContextKey == b.ContextKey &&
-                   a.RulesKey == b.RulesKey &&
+            return a.ContextKey == b.ContextKey &&
                    a.QueryKey == b.QueryKey &&
                    a.FilePathKey == b.FilePathKey &&
                    a.FileContentKey == b.FileContentKey &&
-                   a.PromptStructure == b.PromptStructure &&
                    a.FileStructure == b.FileStructure &&
-                   a.IntroductionText == b.IntroductionText &&
-                   a.RulesText == b.RulesText &&
-                   
+
                    a.DocsTemplate == b.DocsTemplate;
 
         }

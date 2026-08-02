@@ -1,9 +1,6 @@
 ﻿using Core.DocsManager.Services;
 using Core.Settings.Services;
 using Inf.FileSystem;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Inf.DocsManager
 {

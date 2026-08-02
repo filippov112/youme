@@ -2,13 +2,12 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using View.Other;
-using View.Windows.Selections.Models;
 
 namespace View.Windows.Selections.Explorer
 {
     public class ExplorerItemVM : ViewModel
     {
-        private ICommand ChangeSelectingStateCommand {  get; set; }
+        private ICommand ChangeSelectingStateCommand { get; set; }
         public ExplorerItemVM(ExplorerItemVM? parent, ProjectUnit elementDto, ICommand changeSelectingStateCommand)
         {
             Parent = parent;
@@ -72,7 +71,7 @@ namespace View.Windows.Selections.Explorer
                 _isSelected = value;
                 if (Type == ItemType.File && ((!oldValue && value) || (oldValue && !value)))
                     ChangeSelectingStateCommand.Execute(this);
-                
+
                 foreach (var item in Children)
                     item.IsSelected = value;
                 OnPropertyChanged();

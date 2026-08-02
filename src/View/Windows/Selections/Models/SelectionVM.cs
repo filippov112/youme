@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using View.Other;
 
 namespace View.Windows.Selections.Models
 {
-    public class SelectionVM: ViewModel
+    public class SelectionVM : ViewModel
     {
         private string _name = string.Empty;
         public ICommand SelectCommand { get; set; }

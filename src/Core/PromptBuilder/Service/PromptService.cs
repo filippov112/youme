@@ -1,6 +1,6 @@
 ﻿using Core.Explorer.Services;
+using Core.Layouts.Services;
 using Core.PromptBuilder.Models;
-using Core.Settings.Models;
 using Core.Settings.Services;
 using File = Core.PromptBuilder.Models.File;
 
@@ -10,7 +10,7 @@ namespace Core.PromptBuilder.Service
     {
         public Task<string> GetPrompt(List<string> filePath, string queryText);
     }
-    public class PromptService(IConfigService cs, IFileSystemService fsm) : IPromptService
+    public class PromptService(IConfigService cs, IFileSystemService fsm, IFileComponentService fileComponentService, ILayoutService layoutService) : IPromptService
     {
         public async Task<string> GetPrompt(List<string> filePath, string queryText)
         {
@@ -28,10 +28,12 @@ namespace Core.PromptBuilder.Service
                 files.Add(file);
             }
             var context = new Context(activeSettings.ContextKey, files);
-            var intro = new Introduction(activeSettings.IntroductionKey, activeSettings.IntroductionText);
-            var rules = new Rules(activeSettings.RulesKey, activeSettings.RulesText);
             var query = new Query(activeSettings.QueryKey, queryText);
-            var prompt = new Prompt(activeSettings.PromptStructure, rules, query, intro, context);
+
+            var promptStructure = layoutService.ActiveLayoutStructure;
+            Dictionary<string, string> fileComponents = await fileComponentService.GetComponentsDict();
+
+            var prompt = new Prompt(promptStructure, query, context, fileComponents);
 
             string result = prompt.Build();
             return result;

@@ -2,9 +2,5 @@
 
 namespace Core.PromptBuilder.Models
 {
-    public class FileContent(string key, string content) : IComponent
-    {
-        public string Key => key;
-        public string Value { get; set; } = content;
-    }
+    public record FileContent(string Key, string Content) : PromptComponent(Key, Content);
 }

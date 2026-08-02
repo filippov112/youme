@@ -1,6 +1,7 @@
 ﻿using Core.CatalogParser.Services;
 using Core.DocsManager.Services;
 using Core.Explorer.Services;
+using Core.Layouts.Services;
 using Core.Selections.Services;
 using Core.Settings.Services;
 using Core.Tools;
@@ -9,6 +10,7 @@ using Inf.Constants;
 using Inf.DocsManager;
 using Inf.Explorer;
 using Inf.FileSystem;
+using Inf.Layouts;
 using Inf.Selections;
 using Inf.Settings;
 using Inf.Tools;
@@ -33,6 +35,8 @@ namespace Inf
             services.AddSingleton<ICatalogJsonProcessor, CatalogJsonProcessor>();
             services.AddSingleton<IDocsService, DocsService>();
             services.AddSingleton<ISelectionService, SelectionService>();
+            services.AddSingleton<ILayoutService, LayoutService>();
+            services.AddSingleton<IFileComponentService, FileComponentService>();
         }
     }
 }

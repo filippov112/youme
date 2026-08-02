@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using View.Other;
 using View.Windows.Main.Explorer;
 
 namespace View.Windows.Main.Selections.Models
 {
-    public class SelectionVM: ViewModel
+    public class SelectionVM : ViewModel
     {
         public ICommand SelectCommand { get; set; }
 
@@ -28,7 +25,7 @@ namespace View.Windows.Main.Selections.Models
 
         private void SelectItems(object? sender)
         {
-            foreach(var file in _files)
+            foreach (var file in _files)
             {
                 foreach (var item in _items.Where(x => x.FullPath == file))
                 {

@@ -2,8 +2,8 @@
 
 namespace Core.PromptBuilder.Models
 {
-    public class Prompt(string structure, Rules rules, Query query, Introduction introduction, Context context) :
-        ComplexBlock(structure, [rules, query, introduction, context])
+    public class Prompt(string layout, Query query, Context context, Dictionary<string, string> fileComponents) :
+        ComplexBlock(layout, [query, context, .. fileComponents.Select((item) => new PromptComponent(item.Key, item.Value))])
     {
     }
 }

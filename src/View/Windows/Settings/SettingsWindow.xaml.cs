@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Configuration;
 using System.Windows;
 
 namespace View.Windows.Settings

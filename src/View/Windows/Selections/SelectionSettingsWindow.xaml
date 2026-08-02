@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:View.Windows.Selections"
         xmlns:exp="clr-namespace:View.Windows.Selections.Explorer"
         mc:Ignorable="d"
-        Title="Настройка выборок" Height="600" Width="1100">
+        Title="Выборки файлов" Height="600" Width="1100">
     <Grid>
         <Grid.Background>
             <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>

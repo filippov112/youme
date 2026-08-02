@@ -2,7 +2,6 @@
 using Core.Explorer.Services;
 using Core.Selections.Services;
 using System.Collections.ObjectModel;
-using System.Windows;
 using System.Windows.Input;
 using View.Other;
 using View.Services;
@@ -11,23 +10,23 @@ using View.Windows.Selections.Models;
 
 namespace View.Windows.Selections
 {
-    public class SelectionSettingsWindowVM: ViewModel
+    public class SelectionSettingsWindowVM : ViewModel
     {
         private readonly ISelectionService _selectionService;
         private readonly IDialogService _dialogService;
         private readonly IFileSystemService _fileSystemService;
 
-        
+
         /// <summary>
         /// Выборки
         /// </summary>
         public ObservableCollection<SelectionVM> Selections { get; private set; } = [];
-        
+
         /// <summary>
         /// Дерево проекта
         /// </summary>
         public ExplorerVM ExplorerViewModel { get; private set; }
-        private readonly ProjectUnit? tree;
+        private ProjectUnit? tree;
         private List<ExplorerItemVM>? treeItems;
         /// <summary>
         /// Файлы
@@ -41,7 +40,7 @@ namespace View.Windows.Selections
             _fileSystemService = fileSystemService;
             ExplorerViewModel = new();
 
-            
+
             CreateSelectionCommand = new RelayCommand(CreateSelection);
             RenameSelectionCommand = new RelayCommand(RenameSelection, () => SelectedSelection is not null);
             DeleteSelectionCommand = new RelayCommand(DeleteSelection, () => SelectedSelection is not null);
@@ -53,21 +52,27 @@ namespace View.Windows.Selections
             SaveCommand = new RelayCommand(Save, CanSave);
             ChangeSelectingStateCommand = new RelayCommand<ExplorerItemVM>(ChangeSelectingState);
 
-            try
+            Task.Run(async () =>
             {
-                var selections = Task.Run(_selectionService.GetSelections).Result;
-                tree = Task.Run(_fileSystemService.GetTreeAsync).Result;
-
-                App.Current.Dispatcher.Invoke(() =>
+                try
                 {
-                    foreach (var selection in selections)
-                        Selections.Add(new SelectionVM(selection.Name, new(selection.Files.Select(x => new FileVM(x)))));
-                });
-            }
-            catch (Exception ex)
-            {
-                _dialogService.ShowError($"Ошибка загрузки выборок: {ex.Message}");
-            }
+                    var selections = await _selectionService.GetSelections();
+                    tree = await _fileSystemService.GetTreeAsync();
+
+                    App.Current.Dispatcher.Invoke(() =>
+                    {
+                        foreach (var selection in selections)
+                            Selections.Add(new SelectionVM(selection.Name, new(selection.Files.Select(x => new FileVM(x)))));
+                    });
+                }
+                catch (Exception ex)
+                {
+                    App.Current.Dispatcher.Invoke(() =>
+                    {
+                        _dialogService.ShowError($"Ошибка загрузки выборок: {ex.Message}");
+                    });
+                }
+            });
         }
 
         #region Selections
@@ -76,7 +81,7 @@ namespace View.Windows.Selections
         public ICommand CreateSelectionCommand { get; private set; }
 
         private string _currentSelectionName;
-        public string CurrentSelectionName 
+        public string CurrentSelectionName
         {
             get => _currentSelectionName;
             set
@@ -225,7 +230,8 @@ namespace View.Windows.Selections
         public ICommand SaveCommand { get; private set; }
         public void Save(object? sender)
         {
-            Task.Run(async () => { 
+            Task.Run(async () =>
+            {
                 await _selectionService.SaveSelections(Selections.Select(x => new Core.Selections.Models.Selection() { Name = x.Name, Files = [.. x.Files.Select(y => y.Path)] }));
             });
             selectionsChanged = false;

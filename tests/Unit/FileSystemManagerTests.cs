@@ -1,5 +1,5 @@
-﻿using Core.Explorer.Services;
-using Core.Settings.Services;
+﻿using Core.Settings.Services;
+using Inf.Constants;
 using Inf.Explorer;
 using Inf.FileSystem;
 using Moq;
@@ -77,6 +77,7 @@ namespace ProjectStudio.Test.Unit
             var fsm = new FileSystemManager(
                 mockFsWrapper.Object,
                 mockDirFactory.Object,
+                new SystemConstants(),
                 mockConfig.Object);
 
             // Act - получаем структуру проекта
@@ -160,8 +161,8 @@ namespace ProjectStudio.Test.Unit
 
             var fsm = new FileSystemManager(
                 mockFsWrapper.Object,
-                mockDirFactory.Object,
-                mockConfig.Object);
+                mockDirFactory.Object, new SystemConstants(),
+               mockConfig.Object);
 
             // Act
             var result = await fsm.GetTreeAsync();
@@ -173,7 +174,7 @@ namespace ProjectStudio.Test.Unit
             Assert.Empty(result.Children);
         }
 
-      
+
 
         // Вспомогательный метод для создания мока файла
         private static Mock<IDirectoryInfoWrapper> CreateFileMock(string name, string fullPath)

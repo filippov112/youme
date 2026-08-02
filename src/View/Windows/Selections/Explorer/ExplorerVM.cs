@@ -2,7 +2,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using View.Other;
-using View.Windows.Selections.Models;
 
 namespace View.Windows.Selections.Explorer
 {
