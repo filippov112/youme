@@ -211,8 +211,7 @@ namespace View.Windows.Main
                 var files = new HashSet<string>();
                 if (ExplorerViewModel.Items.Count > 0)
                     ExplorerViewModel.Items[0].GetSelectedFiles(files);
-                var filesList = files.Union(ExplorerViewModel.SelectedFiles).ToList();
-                var text = await _promptService.GetPrompt(filesList, Query);
+                var text = await _promptService.GetPrompt(files.ToList(), Query);
                 App.Current.Dispatcher.Invoke(() =>
                 {
                     EditorViewModel.Text = text;
@@ -231,13 +230,7 @@ namespace View.Windows.Main
                 if (ExplorerViewModel.Items.Count > 0)
                     ExplorerViewModel.Items[0].GetSelectedFiles(files);
 
-                string[]? includeFiles = null;
-                if (files.Count > 0 || ExplorerViewModel.SelectedFiles.Count > 0)
-                {
-                    includeFiles = [.. files.Union(ExplorerViewModel.SelectedFiles)];
-                }
-
-                var text = await _catalogJsonProcessor.ParseDirectoryToJson(includeFiles);
+                var text = await _catalogJsonProcessor.ParseDirectoryToJson(files.ToArray());
                 if (!string.IsNullOrEmpty(Query))
                     text = _catalogJsonProcessor.MergeJsonStructures(Query, text);
 

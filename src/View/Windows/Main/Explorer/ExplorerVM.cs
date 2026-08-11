@@ -32,8 +32,6 @@ namespace View.Windows.Main.Explorer
             _config = config;
         }
         public ExplorerMenuVM ExplorerContextMenu { get; set; }
-
-        public HashSet<string> SelectedFiles => _selectedPaths;
         public DataObject MoveToQuery(ExplorerItemVM item)
         {
             DataObject data = new("ExplorerItemVM", item);
@@ -74,6 +72,7 @@ namespace View.Windows.Main.Explorer
         /// <param name="rootPath"></param>
         public void LoadProject(ProjectUnit? rootElement, bool fastReload = true)
         {
+            ClearTreeState();
             if (fastReload)
                 SaveTreeState();
             Items.Clear();
@@ -83,6 +82,7 @@ namespace View.Windows.Main.Explorer
             Items.Add(rootItem);
             if (fastReload)
                 RestoreTreeState();
+            ClearTreeState();
             OnPropertyChanged();
         }
     }
